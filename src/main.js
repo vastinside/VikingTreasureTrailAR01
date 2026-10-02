@@ -2,14 +2,12 @@ import './styles.css'
 import { treasures } from './config/treasures.js'
 import { loadProgress, collectTreasure, resetProgress, countFound } from './game/progress.js'
 
-const axe = treasures[0]
 const progressLabel = document.querySelector('#progress')
 const panelCount = document.querySelector('#panel-count')
 const collectButton = document.querySelector('#collect')
 const resetButton = document.querySelector('#reset-trail')
 const startButton = document.querySelector('#start-camera')
 const cameraScene = document.querySelector('#camera-scene')
-const cardTarget = document.querySelector('#card-target')
 const viewer = document.querySelector('#viewer')
 const treasureName = document.querySelector('#treasure-name')
 const treasureFact = document.querySelector('#treasure-fact')
@@ -23,18 +21,20 @@ const treasureModel = document.querySelector('#treasure-model')
 const HELP_AFTER_MS = 8000
 let helpTimer = null
 let audioContext = null
+let active = null
 const voice = new Audio()
 
 function render() {
   const progress = loadProgress()
   const found = countFound(progress)
-  progressLabel.textContent = `${found} / 5 Treasures Found`
-  panelCount.textContent = `${found} / 5`
+  const total = treasures.length
+  progressLabel.textContent = `${found} / ${total} Treasures Found`
+  panelCount.textContent = `${found} / ${total}`
 
-  treasureName.textContent = axe.name
-  treasureFact.textContent = axe.fact
+  treasureName.textContent = active.name
+  treasureFact.textContent = active.fact
 
-  if (progress[axe.id]) {
+  if (progress[active.id]) {
     collectButton.textContent = 'Collected'
     collectButton.disabled = true
   } else {
@@ -43,11 +43,19 @@ function render() {
   }
 }
 
+function showTreasure(treasure) {
+  const modelChanged = !active || active.model !== treasure.model
+  active = treasure
+  if (modelChanged) treasureModel.setAttribute('gltf-model', treasure.model)
+  render()
+}
+
 function unlockAudio() {
   if (!audioContext) audioContext = new AudioContext()
   audioContext.resume()
-  if (!axe.voice) return
-  voice.src = axe.voice
+  const primer = treasures.find((item) => item.voice)
+  if (!primer) return
+  voice.src = primer.voice
   voice.play().then(() => {
     voice.pause()
     voice.currentTime = 0
@@ -55,7 +63,11 @@ function unlockAudio() {
 }
 
 function playVoice() {
-  if (!axe.voice) return
+  if (!active.voice) {
+    stopVoice()
+    return
+  }
+  voice.src = active.voice
   voice.currentTime = 0
   voice.play().catch(() => {})
 }
@@ -81,6 +93,13 @@ function openPanel() {
   viewer.resize()
   render()
   playVoice()
+}
+
+function onTarget(index) {
+  const treasure = treasures.find((item) => item.targetIndex === index)
+  if (!treasure) return
+  showTreasure(treasure)
+  openPanel()
 }
 
 async function downloadTarget(onProgress) {
@@ -111,9 +130,8 @@ async function beginTrail() {
   preparing.textContent = 'Preparing the trail…'
 
   try {
-
     if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.ready
+      await navigator.serviceWorker.ready
     }
 
     await downloadTarget((fraction) => {
@@ -149,12 +167,13 @@ cameraScene.addEventListener('arError', () => {
   status.textContent = 'The camera could not start. Allow the camera and try again.'
 })
 
-cardTarget.addEventListener('targetFound', () => {
-  openPanel()
+treasures.forEach((treasure) => {
+  const entity = document.querySelector(`#target-${treasure.targetIndex}`)
+  entity.addEventListener('targetFound', () => onTarget(treasure.targetIndex))
 })
 
 collectButton.addEventListener('click', () => {
-  collectTreasure(axe.id)
+  collectTreasure(active.id)
   render()
 })
 
@@ -175,12 +194,13 @@ keepTryingButton.addEventListener('click', () => {
 })
 
 viewTreasureButton.addEventListener('click', () => {
+  const progress = loadProgress()
+  const next = treasures.find((item) => !progress[item.id]) || treasures[0]
+  showTreasure(next)
   openPanel()
 })
 
-treasureModel.setAttribute('gltf-model', axe.model)
-
-render()
+showTreasure(treasures[0])
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')

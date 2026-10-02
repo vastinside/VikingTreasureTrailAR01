@@ -1,4 +1,4 @@
-const CACHE = 'havelok-trail-v3'
+const CACHE = 'havelok-trail-v5'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting())
@@ -18,8 +18,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
-const isTrailFile = url.pathname.endsWith('targets.mind') || url.pathname.endsWith('.glb') || url.pathname.endsWith('.mp3')
-if (!isTrailFile) return
+  const isTrailFile = url.pathname.endsWith('targets.mind') || url.pathname.endsWith('.glb') || url.pathname.endsWith('.mp3')
+  if (!isTrailFile) return
+  if (event.request.headers.has('range')) return
 
   event.respondWith(
     (async () => {
@@ -28,7 +29,9 @@ if (!isTrailFile) return
       if (cached) return cached
 
       const response = await fetch(event.request)
-      if (response.ok) cache.put(event.request, response.clone())
+      if (response.status === 200) {
+        await cache.put(event.request, response.clone())
+      }
       return response
     })()
   )
