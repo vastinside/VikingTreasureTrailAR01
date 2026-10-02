@@ -114,7 +114,7 @@ A visitor should be able to:
 7. Collect the treasure.
 8. Keep progress if the page is refreshed or reopened.
 9. Continue even if AR tracking is difficult.
-10. Complete all five treasures.
+10. Complete every collectible stop in the asset list.
 11. Reach a polished final completion screen.
 
 The MVP is successful if the full journey works reliably on common mobile devices without requiring an app installation or account.
@@ -157,7 +157,7 @@ Collect Treasure
 Progress Saved Locally
       |
       v
-Repeat Until 5 / 5
+Repeat Until Every Collectible Stop Is Found
       |
       v
 Completion Screen
@@ -170,30 +170,54 @@ Technical AR development by Vast Inside Ltd
 
 ## 4. Treasure Content
 
-The MVP will use the five existing Havelok treasure items, each as a 3D model on the discovery panel:
+The real trail content comes from `VikingTreasureTrail AR01 - Info&Assets01.pdf` (Videos, 3D Models and Transcripts). Those files are **not in the project yet**. Until they arrive, the running app keeps the practice card, the practice bear, and `placeholder.glb`.
 
-1. Viking Axe
-2. Viking Helmet
-3. Viking Horn
-4. Viking Bowl
-5. Viking Spoon
+Use these resource names when the files are delivered. The `id` is what progress saves. The asset name is the filename to expect.
 
-The visitor does **not** need to find them in a fixed order.
+| Order | PDF name | id | Kind | Asset name |
+| --- | --- | --- | --- | --- |
+| 01 | Viking (Grim) | grim | Intro stop. Kind follows the delivered file. | `VikingGrim` |
+| 02 | Axe | axe | 3D model | `Axe` |
+| 03 | Helmet | helmet | 3D model | `Helmet` |
+| 04 | Sword | sword | No 3D model. Video or still image, matching the delivered file. | `Sword` |
+| 05 | Shield | shield | Image only. The PDF says “Only A Texture”. | `Shield` |
+| 06 | Bowl | bowl | 3D model | `Bowl` |
+| 07 | Horn | horn | 3D model | `Horn` |
+| 08 | LongshipArrival | longship-arrival | Kind follows the delivered file. Keep this name. | `LongshipArrival` |
+| 09 | Congratulation Pattern | congratulation | End of the trail, with music. Not a collected 3D model. | `CongratulationPattern` |
 
-The same panel must also be able to show a still image or a video when a treasure record uses that `kind`. The five Havelok items do not have to ship as videos. The panel code must not assume every stop is a `.glb`.
+Viking Spoon is not in this asset pack.
 
-Example progress:
+Grim is the start of the trail. Congratulation Pattern is the end. The visitor does **not** need to find Axe, Helmet, Sword, Shield, Bowl, Horn, and LongshipArrival in a fixed order. The score counts those collectible stops. Grim and the congratulation ending are part of the journey and are not extra ticks in that score.
+
+The panel must show a model, an image, or a video from `kind`. Sword must not be given a `.glb`. Shield must be an image. A missing file must not be invented; that stop stays out of `treasures.js` until its file is in the project.
+
+Approved visitor text, also the voice script when a recording exists:
+
+1. **Viking (Grim).** Well done Warrior! You have found Grim the Viking at the start of my Viking Treasure Trail. I'm Havelok and Grim is teaching me to be a great Viking warrior! I'm going to need an axe, sword, helmet and lots of other things for my training. See if you can find them on this trail. Good luck!
+2. **Axe.** My Axe is called, The Kolga and made by Uffbert the blacksmith. It is engraved with a scene showing the great wave crashing over Grim's. Well done Warrior, you have found this Axe treasure.
+3. **Helmet.** Did you know Vikings did not have horns on their helmets! They wore chainmail in battle and some helmets had eyepieces too. Well done Warrior, you have found this helmet treasure.
+4. **Sword.** Swords were made using lots of metal. Only the richest warriors could afford them. The sword is made of ore from Flixborough. Well done Warrior, you have found this Sword treasure.
+5. **Shield.** The Vikings made a line of shields called a shield wall, one shield overlapping the next. It was very strong and hard to break up in battle. Well done Warrior! you have found this shield treasure.
+6. **Bowl.** Berries and porridge, sizzling meat, fish, flat breads and even cakes, we had a colourful variety of foods to eat. Well done Warrior! you have found this wooden treasure.
+7. **Horn.** The Vikings used cattle horns to call for war and as a drinking vessel, to drink Mead made from honey. Well done Warrior, you have found this Warhorn treasure.
+8. **LongshipArrival.** The longship had a shallow hull so it could sail across seas and up rivers. Well done warrior, you have found this Longship treasure.
+9. **Congratulation Pattern.** Congratulations, you have reached the end of the Viking Treasure Trail. Go to the start and collect your reward. Music plays with this ending.
+
+Example progress before the files arrive is the practice trail (card and bear). Example progress after the files arrive:
 
 ```text
 Treasures Found
 
 ✓ Axe
 ○ Helmet
-✓ Horn
-○ Bowl
-○ Spoon
+○ Sword
+○ Shield
+✓ Bowl
+○ Horn
+○ LongshipArrival
 
-2 / 5
+2 / 7
 ```
 
 ---
@@ -419,21 +443,26 @@ Progress does not depend on `kind`. A video stop, an image stop, and a model sto
 
 ## 12. Completion Screen
 
-When all five treasures are collected:
+When every collectible stop is collected, and the Congratulation Pattern has been reached:
 
 ```text
 TREASURE TRAIL COMPLETE!
 
-You found all five of Havelok's lost Viking treasures.
+Congratulations, you have reached the end of the Viking Treasure Trail.
+Go to the start and collect your reward.
 
 ✓ Axe
 ✓ Helmet
-✓ Horn
+✓ Sword
+✓ Shield
 ✓ Bowl
-✓ Spoon
+✓ Horn
+✓ LongshipArrival
 
-Well done, Viking Explorer!
+Well done, Warrior!
 ```
+
+Play the Congratulation Pattern music on this screen.
 
 Use approved Havelok or Grim artwork.
 
@@ -695,14 +724,18 @@ Check:
 
 ### Phase 4: Add Remaining Treasures
 
-After the Axe prototype passes:
+After the Axe prototype passes, add the remaining names from the AR01 asset pack, in this order, only when each file is actually in the project:
 
+- Viking (Grim)
 - Helmet
-- Horn
+- Sword (no 3D model)
+- Shield (texture only)
 - Bowl
-- Spoon
+- Horn
+- LongshipArrival
+- Congratulation Pattern (ending music)
 
-Use the same panel and the same treasure record. Add an image stop and a video stop only when those assets exist, including a transparent pair if that video needs alpha. Prove video on an iPhone with an H.264 `.mp4` before relying on it, and prove transparent playback with the WebM and MOV pair on Android and iPhone.
+Use the same panel and the same treasure record. Sword and Shield must use their stated kind. Prove video on an iPhone with an H.264 `.mp4` before relying on it, and prove transparent playback with the WebM and MOV pair on Android and iPhone.
 
 ### Phase 5: Complete Visitor Flow
 
@@ -841,6 +874,6 @@ These can be considered later if separately requested.
 
 The final MVP is:
 
-> A browser-based Havelok Viking Treasure Trail. MindAR recognises the printed artwork. A steady on-screen panel then shows a 3D model, a still image, or a video, with the treasure name, a short fact, and a voice when a sound file exists. Transparent video uses a WebM alpha file and an iPhone HEVC alpha file. The five Havelok treasures are 3D models on that panel. Progress is saved locally. A preparing screen and a service worker cover slow and dropped connections. Vast Inside hosts the primary build, a backup host receives the same build, and the final Havelok completion page carries a small Vast Inside technical-development credit.
+> A browser-based Havelok Viking Treasure Trail. MindAR recognises the printed artwork. A steady on-screen panel then shows a 3D model, a still image, or a video, with the treasure name, the approved AR01 transcript, and a voice when a sound file exists. The asset names are Viking (Grim), Axe, Helmet, Sword, Shield, Bowl, Horn, LongshipArrival, and Congratulation Pattern. Sword has no 3D model. Shield is a texture only. Congratulation Pattern ends the trail with music. Progress is saved locally. A preparing screen and a service worker cover slow and dropped connections. Vast Inside hosts the primary build, a backup host receives the same build, and the final completion page carries a small Vast Inside technical-development credit.
 
 The MVP should improve reliability and maintainability without turning the project into a large software platform.
