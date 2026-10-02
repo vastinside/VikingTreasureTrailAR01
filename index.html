@@ -16,6 +16,8 @@
         Find the Viking images, point your camera at them,
         and collect all five treasures.
       </p>
+      <p id="progress">0 / 5 Treasures Found</p>
+      <button id="reset-trail" type="button">Reset trail</button>
       <p id="status">Starting the project…</p>
       <button id="start-camera" type="button">Start camera</button>
     </main>
@@ -34,7 +36,7 @@
     <section id="panel" class="panel">
       <h2>Viking Axe</h2>
       <p>Drag inside the frame to look around. This box stands in for the axe model.</p>
-      <a-scene id="viewer" embedded>
+      <a-scene id="viewer" embedded renderer="alpha: true" background="transparent: true" vr-mode-ui="enabled: false">
         <a-box
           position="0 1.2 -2"
           color="#e2c56a"
@@ -43,6 +45,8 @@
         <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
         <a-camera position="0 1.6 0" look-controls="enabled: true"></a-camera>
       </a-scene>
+      <p id="panel-count">0 / 5</p>
+      <button id="collect" type="button">Collect treasure</button>
     </section>
 
     <script type="module" src="/src/main.js"></script>
