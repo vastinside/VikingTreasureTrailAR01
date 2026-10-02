@@ -12,15 +12,39 @@ Use a **data-driven static web app**, not a fully dynamic backend system.
 
 ### Recommended stack
 
-- **A-Frame** for the AR scene and 3D entity structure
-- **MindAR** for image target tracking
+- **MindAR** to recognise the printed Viking artwork through the camera
+- **A-Frame** for the camera scene, and for the 3D viewer inside the discovery panel
+- **An HTML discovery panel** for what the visitor actually watches
 - **JavaScript** for interaction and game logic
 - **GLB / GLTF** for 3D treasure models
+- **MP4, WebM, and MOV** for video stops, including transparent video where required
+- **WebP** for still-image stops and branding
+- **MP3** for optional voice
 - **localStorage** for visitor progress
 - **Vite** for development and production builds
 - **Vast Inside hosting** as the primary production host
 - **GitHub Pages** as a backup mirror only
-- **Service Worker** for offline caching of critical files
+- **A preparing screen plus a Service Worker** so a slow or dropped connection does not stall the trail
+
+### How recognition and display are split
+
+The camera only answers which printed picture is in view. It does not carry the treasure.
+
+```text
+Printed artwork
+      |
+      v
+MindAR recognises it
+      |
+      v
+Discovery panel opens on the screen
+      |
+      v
+Video, still image, or 3D model
+plus name, short text, and voice if a file exists
+```
+
+The video, photo, or 3D model stays on that panel. It is not placed on the printed picture. A 3D stop can be turned with a finger inside the panel. A-Frame draws that viewer. The model is not parented to the MindAR target, so tracking jitter does not shake it.
 
 ### Why data-driven
 
@@ -34,24 +58,46 @@ export const treasures = [
     id: "axe",
     name: "Viking Axe",
     targetIndex: 0,
-    model: "/models/axe.glb",
+    kind: "model",
+    src: "/models/axe.glb",
     fact: "Short approved visitor text.",
+    voice: "/audio/axe.mp3",
     enabled: true
   },
   {
     id: "helmet",
     name: "Viking Helmet",
     targetIndex: 1,
-    model: "/models/helmet.glb",
+    kind: "model",
+    src: "/models/helmet.glb",
     fact: "Short approved visitor text.",
     enabled: true
   }
 ];
 ```
 
-This makes it easier to replace models, change wording, disable a treasure, or add future treasures without rewriting the whole application.
+`kind` is `"model"`, `"image"`, or `"video"`. `voice` is omitted when that stop has no sound. The five Havelok treasures ship as `"model"`. A later stop can be a video or a still image without a second app, and progress saving treats every kind the same way.
 
-**Important:** adding a completely new AR image target will still require the MindAR target file to be recompiled. The model and text can be changed independently.
+A video that must show the camera through empty pixels also supplies the transparent pair:
+
+```js
+{
+  id: "longship",
+  name: "Longship",
+  targetIndex: 5,
+  kind: "video",
+  src: "/videos/longship.mp4",
+  srcWebm: "/videos/longship.webm",
+  srcMov: "/videos/longship.mov",
+  fact: "Short approved visitor text.",
+  voice: "/audio/longship.mp3",
+  enabled: true
+}
+```
+
+`src` is the solid H.264 fallback. `srcWebm` is VP9 with alpha for Android and desktop Chrome. `srcMov` is HEVC with alpha for iPhone. Stops that do not need transparency omit `srcWebm` and `srcMov`.
+
+**Important:** adding a completely new printed target still requires the MindAR target file to be recompiled. The panel media, text, and voice can be changed independently.
 
 ---
 
@@ -61,14 +107,15 @@ A visitor should be able to:
 
 1. Scan one QR code.
 2. Understand the trail without staff explanation.
-3. Start the AR camera.
-4. Find any of the five Viking treasure targets.
-5. See the matching treasure appear in AR.
-6. Collect the treasure.
-7. Keep progress if the page is refreshed or reopened.
-8. Continue even if AR tracking is difficult.
-9. Complete all five treasures.
-10. Reach a polished final completion screen.
+3. Wait on a clear preparing screen while the trail files download.
+4. Start the AR camera.
+5. Find any of the five Viking treasure targets.
+6. See a steady discovery panel with the matching video, image, or 3D model, the name, a short fact, and a voice if that stop has one.
+7. Collect the treasure.
+8. Keep progress if the page is refreshed or reopened.
+9. Continue even if AR tracking is difficult.
+10. Complete all five treasures.
+11. Reach a polished final completion screen.
 
 The MVP is successful if the full journey works reliably on common mobile devices without requiring an app installation or account.
 
@@ -86,6 +133,12 @@ Welcome Screen
 How to Play
       |
       v
+Start
+      |
+      v
+Preparing Screen (download trail files)
+      |
+      v
 Start Camera
       |
       v
@@ -95,7 +148,7 @@ Find Viking Target
 MindAR Detects Artwork
       |
       v
-Treasure Appears in AR
+Discovery Panel (video, image, or 3D model + text + optional voice)
       |
       v
 Collect Treasure
@@ -117,7 +170,7 @@ Technical AR development by Vast Inside Ltd
 
 ## 4. Treasure Content
 
-The MVP will use the five existing Havelok treasure items:
+The MVP will use the five existing Havelok treasure items, each as a 3D model on the discovery panel:
 
 1. Viking Axe
 2. Viking Helmet
@@ -126,6 +179,8 @@ The MVP will use the five existing Havelok treasure items:
 5. Viking Spoon
 
 The visitor does **not** need to find them in a fixed order.
+
+The same panel must also be able to show a still image or a video when a treasure record uses that `kind`. The five Havelok items do not have to ship as videos. The panel code must not assume every stop is a `.glb`.
 
 Example progress:
 
@@ -176,13 +231,13 @@ Keep instructions to three steps:
 
 1. Find a Viking Treasure sign.
 2. Point the phone camera at the artwork.
-3. Discover and collect the treasure.
+3. Discover and collect the treasure on the screen.
 
 Then show:
 
 **[ Start Camera ]**
 
-Camera permission should only be requested after the visitor chooses to begin.
+That tap is the visitor gesture iPhone requires before sound or video may play. Unlock audio in the click itself, then show the preparing screen, then ask for the camera. Camera permission should only be requested after the visitor chooses to begin.
 
 ---
 
@@ -194,11 +249,13 @@ Camera permission should only be requested after the visitor chooses to begin.
 Pattern Marker (.patt)
         |
         v
-AR.js
+AR.js recognises the pattern
         |
         v
-AR Content
+A floating screen panel (video or photo)
 ```
+
+The old markers were empty. Video and photos were HTML panels, not objects on the paper. Photos and titles disappeared as soon as the pattern flickered. All videos were loaded together. Two clips were WebM, which iPhone does not play, and one page path pointed at a `.webm` while the file on disk was `.mp4`.
 
 ### New prototype
 
@@ -206,31 +263,34 @@ AR Content
 Designed Viking Artwork
         |
         v
-MindAR Image Tracking
+MindAR recognises the picture
         |
         v
-A-Frame AR Content
+One discovery panel stays on screen
 ```
 
-The purpose of the rebuild is not to replace A-Frame. The main improvement is replacing the old pattern-marker tracking approach with image-target tracking and cleaner application logic.
+MindAR replaces pattern-marker recognition. The panel replaces the old one-off video and photo handlers. Panel content is not parented to the image target.
 
 ---
 
-## 8. Treasure Interaction
+## 8. Discovery Panel
 
-When a target is recognised:
+When a target is recognised, open one panel and keep it up. Use the same panel for every treasure.
 
 ```text
 Target Detected
       |
       v
-Treasure Model Appears
+Panel opens and stays open
       |
       v
-Small Rotation / Animation
+model, image, or video
       |
       v
 Treasure Name + Short Approved Fact
+      |
+      v
+Voice, if this stop has an audio file
       |
       v
 [ Collect Treasure ]
@@ -248,39 +308,60 @@ Progress Updated
 1 / 5
 ```
 
-Sound may be used as a small enhancement, but it must not be required for the experience.
+Closing the panel without collecting returns the visitor to scanning. The find is not saved.
+
+### Media rules
+
+- One panel. Do not put a separate `<video>` in the page for every stop. Set the file only for the stop just found.
+- `kind: "model"` shows the `.glb` in an A-Frame viewer inside the panel.
+- `kind: "image"` shows one picture (`.webp`).
+- `kind: "video"` shows one `<video>` with `playsinline`. Wait until the clip has buffered before revealing it. Show a spinner while it buffers.
+- Solid video is H.264 `.mp4` with AAC audio. Do not use `.webm` for a solid clip. iPhone Safari does not play WebM.
+- Voice is optional. If `voice` is missing, the panel still works. Use a short `.mp3`. Play it from the gesture unlocked by **Start Camera**, not as the first `play()` call of the visit.
+- Sound must not be required to collect a treasure.
+
+### Transparent video
+
+A normal `.mp4` is a solid rectangle. See-through pixels need a real alpha channel in the file. The old trail clips are `yuv420p` and have no alpha, so they cannot be made transparent later.
+
+When a stop needs the camera to show through the empty pixels, publish both:
+
+| Device | File | Format |
+| --- | --- | --- |
+| Android and desktop Chrome | `srcWebm` | VP9 with alpha |
+| iPhone | `srcMov` | HEVC with alpha |
+
+The panel still has one `<video>`. The WebM source is listed first. Chrome plays it. iPhone skips WebM and plays the MOV. The panel background stays clear. A stop with only `src` is shown as a solid video.
 
 ---
 
 ## 9. Tracking Loss Behaviour
 
-The treasure should not instantly disappear because the camera briefly loses the target.
+Before a match, a brief miss stays in the scanning state.
 
-Expected behaviour:
+Visitor-friendly guidance:
+
+> Move your camera slowly towards the Viking image.
+
+Do not show technical messages such as "marker lost".
+
+After a match, the panel stays until the visitor collects the treasure or closes the panel. A flicker, a covered corner, or a few seconds away from the picture must not clear the video, image, model, text, or voice. This is the fix for the old trail, which hid photos and titles on every `markerLost`.
 
 ```text
 Target Found
       |
       v
-Show Treasure
+Panel stays open
       |
       v
-Brief Tracking Loss
+Brief or longer tracking loss
       |
       v
-Keep Treasure Visible
+Panel stays open
       |
       v
-Target Returns
+Visitor collects or closes
 ```
-
-If the target is genuinely lost for longer, the experience should smoothly return to the scanning state.
-
-Do not show technical messages such as "marker lost".
-
-Use visitor-friendly guidance such as:
-
-> Move your camera slowly towards the Viking image.
 
 ---
 
@@ -297,7 +378,7 @@ Having trouble finding the treasure?
 [ View Treasure ]
 ```
 
-**View Treasure** should open the same 3D model in a normal interactive viewer so the visitor can still collect it.
+**View Treasure** opens the same discovery panel for that stop, without a scan, so the visitor can still watch the model, image, or video and collect it.
 
 This ensures the trail remains usable on older devices or in difficult lighting.
 
@@ -331,6 +412,8 @@ Benefits:
 - progress can survive reopening the page on the same browser
 
 Include a **Reset Trail** option.
+
+Progress does not depend on `kind`. A video stop, an image stop, and a model stop are saved the same way.
 
 ---
 
@@ -376,31 +459,34 @@ Each treasure record should contain:
 
 - unique ID
 - display name
-- model path
+- `kind`: `model`, `image`, or `video`
+- media path (`src`)
+- optional `srcWebm` and `srcMov` when the video has transparency
 - target index
 - short visitor text
 - enabled / disabled state
-- optional scale and position
-- optional animation
-- optional fallback image
+- optional voice path
+- optional scale inside the 3D viewer
+- optional poster image for a video stop
 
 This allows future changes without changing the core tracking or progress code.
 
 ### What can be changed easily
 
-- replace a 3D model
+- replace a 3D model, image, or video
+- add or remove a voice file
+- add the transparent WebM and MOV pair
 - change treasure name
 - change visitor text
 - enable or disable a treasure
-- change model scale or position
 - change display order
-- add another configured treasure
+- add another configured treasure of any kind
 
 ### What still requires build work
 
 - adding a brand-new image target
 - recompiling the MindAR `.mind` target file
-- changing core AR behaviour
+- changing core panel or tracking behaviour
 - adding a new interaction type
 
 This is the right level of flexibility for the MVP. A database or CMS is not required.
@@ -424,15 +510,16 @@ havelok-ar/
 |   |   |-- bowl.glb
 |   |   `-- spoon.glb
 |   |
-|   |-- targets/
-|   |   `-- havelok-targets.mind
-|   |
+|   |-- videos/
 |   |-- images/
 |   |   |-- havelok-logo.webp
 |   |   |-- grim.webp
 |   |   `-- vast-inside-logo.webp
 |   |
-|   `-- audio/
+|   |-- audio/
+|   |
+|   `-- targets/
+|       `-- havelok-targets.mind
 |
 `-- src/
     |-- main.js
@@ -449,8 +536,11 @@ havelok-ar/
     |   `-- treasure-manager.js
     |
     `-- ui/
-        `-- interface.js
+        |-- interface.js
+        `-- panel.js
 ```
+
+`public/videos/` holds `.mp4`, and the `.webm` / `.mov` pair when a clip is transparent. `panel.js` is the one screen that shows a model, an image, or a video.
 
 ---
 
@@ -487,9 +577,34 @@ Do not manually maintain two different versions.
 
 ---
 
-## 16. Offline Support
+## 16. Preparing the Trail and Offline Support
 
-Use a Service Worker to cache critical production assets after first load:
+The first visit must not start downloading a large file at the moment of a scan.
+
+After the visitor taps start:
+
+```text
+Unlock audio from that tap
+      |
+      v
+Preparing the trail…  (progress line)
+      |
+      v
+Download the MindAR target and each enabled stop's media
+      |
+      v
+Open the camera
+```
+
+Keep files small enough to finish on venue Wi-Fi:
+
+- solid video: short H.264 `.mp4`, about a few megabytes, 720p, AAC audio
+- transparent video: the WebM and MOV pair, still kept as short as the artwork allows
+- photos: `.webp`
+- voice: short `.mp3`, not `.wav`
+- models: compressed `.glb`
+
+Then use a Service Worker to keep that copy for the next open and for a Wi-Fi drop during the event:
 
 - HTML
 - CSS
@@ -497,11 +612,11 @@ Use a Service Worker to cache critical production assets after first load:
 - A-Frame
 - MindAR
 - compiled target file
-- five treasure models
-- essential images
+- each enabled stop's model, image, or video
+- essential branding images
 - essential audio
 
-This reduces the impact of temporary Wi-Fi or mobile-network problems during the event.
+The preparing screen covers the first download. The service worker covers every visit after that.
 
 ---
 
@@ -532,13 +647,16 @@ Welcome
 Instructions
   |
   v
+Preparing screen
+  |
+  v
 Camera
   |
   v
-Axe Target
+Axe Target recognised
   |
   v
-Axe AR Model
+Panel shows the axe model, name, and fact
   |
   v
 Collect
@@ -547,7 +665,7 @@ Collect
 1 / 5
 ```
 
-Do not build the remaining four treasures until this works well.
+The panel stays up if tracking drops. Do not build the remaining four treasures until this works well. The panel should already accept `kind`, even though this slice only uses `model`.
 
 ### Phase 3: Tracking Validation
 
@@ -568,11 +686,11 @@ Test the Axe target on:
 Check:
 
 - recognition speed
-- tracking stability
-- target reacquisition
-- visible jitter
+- the panel stays up across tracking loss
+- target reacquisition does not open a second panel
 - UI behaviour
 - progress saving
+- preparing screen on a slow connection
 - fallback behaviour
 
 ### Phase 4: Add Remaining Treasures
@@ -584,7 +702,7 @@ After the Axe prototype passes:
 - Bowl
 - Spoon
 
-Use the same reusable treasure system rather than separate custom code for each item.
+Use the same panel and the same treasure record. Add an image stop and a video stop only when those assets exist, including a transparent pair if that video needs alpha. Prove video on an iPhone with an H.264 `.mp4` before relying on it, and prove transparent playback with the WebM and MOV pair on Android and iPhone.
 
 ### Phase 5: Complete Visitor Flow
 
@@ -594,10 +712,16 @@ Connect:
 Welcome
   |
   v
-AR Trail
+Preparing
   |
   v
-Collect Any Treasure
+Camera
+  |
+  v
+Panel for any treasure
+  |
+  v
+Collect
   |
   v
 Progress
@@ -613,14 +737,18 @@ Completion Screen
 
 Test deliberately:
 
-- internet disconnected after first load
+- internet disconnected after the preparing screen has finished
+- slow network during the preparing screen
 - camera permission denied
 - target not recognised
-- target partly covered
+- target partly covered after the panel is open
 - refresh after collection
 - duplicate collection
 - browser closed and reopened
 - fallback used instead of AR
+- a video stop on iPhone
+- a transparent video on iPhone and on Android
+- a stop with no voice file
 - reset trail
 
 The visitor must never become permanently stuck.
@@ -660,19 +788,26 @@ After approval:
 The MVP is ready when:
 
 - the main QR opens the production experience
+- the preparing screen finishes before the camera opens, and shows progress
 - camera permission works on supported browsers
 - all five targets can be recognised
-- treasure models load correctly
-- brief tracking loss does not cause obvious flickering
+- each match opens one discovery panel and does not attach the media to the printed picture
+- the five Havelok models load in that panel
+- the same panel can show an image stop and a video stop from the treasure config
+- a solid video is H.264 `.mp4` and plays on iPhone after the start tap, once buffered
+- a transparent stop plays alpha WebM on Android and alpha HEVC MOV on iPhone
+- a missing voice file does not block the stop
+- brief or longer tracking loss does not close the panel
 - each treasure can only be collected once
 - progress persists after refresh
 - treasures can be collected in any order
-- the non-AR fallback works
+- the non-AR fallback opens the same panel
 - reset works
 - 5 / 5 opens the completion screen
 - Vast Inside credit appears only on the final page
 - the production build works from Vast Inside hosting
 - the same build exists on the backup host
+- a second visit uses the cached files
 - no serious JavaScript errors remain during normal use
 
 ---
@@ -681,6 +816,7 @@ The MVP is ready when:
 
 Do not include:
 
+- placing the video, image, or 3D model onto the printed picture
 - user accounts
 - login
 - backend database
@@ -705,6 +841,6 @@ These can be considered later if separately requested.
 
 The final MVP is:
 
-> A browser-based Havelok Viking Treasure Trail using A-Frame and MindAR, with five reusable treasure experiences, image-target tracking, 3D Viking objects, collection progress saved locally, graceful tracking-loss behaviour, a non-AR fallback, Vast Inside primary hosting, backup deployment, offline caching, and a polished final Havelok completion page carrying a small Vast Inside technical-development credit.
+> A browser-based Havelok Viking Treasure Trail. MindAR recognises the printed artwork. A steady on-screen panel then shows a 3D model, a still image, or a video, with the treasure name, a short fact, and a voice when a sound file exists. Transparent video uses a WebM alpha file and an iPhone HEVC alpha file. The five Havelok treasures are 3D models on that panel. Progress is saved locally. A preparing screen and a service worker cover slow and dropped connections. Vast Inside hosts the primary build, a backup host receives the same build, and the final Havelok completion page carries a small Vast Inside technical-development credit.
 
 The MVP should improve reliability and maintainability without turning the project into a large software platform.
