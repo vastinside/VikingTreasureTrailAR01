@@ -16,9 +16,12 @@ const treasureFact = document.querySelector('#treasure-fact')
 const closeButton = document.querySelector('#close-panel')
 const keepTryingButton = document.querySelector('#keep-trying')
 const viewTreasureButton = document.querySelector('#view-treasure')
+const preparing = document.querySelector('#preparing')
+const status = document.querySelector('#status')
 
 const HELP_AFTER_MS = 8000
 let helpTimer = null
+let audioContext = null
 
 function render() {
   const progress = loadProgress()
@@ -38,6 +41,11 @@ function render() {
   }
 }
 
+function unlockAudio() {
+  if (!audioContext) audioContext = new AudioContext()
+  audioContext.resume()
+}
+
 function scheduleHelp() {
   clearTimeout(helpTimer)
   helpTimer = setTimeout(() => {
@@ -55,10 +63,65 @@ function openPanel() {
   render()
 }
 
+async function downloadTarget(onProgress) {
+  const response = await fetch('./targets/targets.mind')
+  if (!response.ok) throw new Error('Target file missing')
+
+  const total = Number(response.headers.get('content-length'))
+  if (!response.body || !total) {
+    await response.arrayBuffer()
+    onProgress(1)
+    return
+  }
+
+  const reader = response.body.getReader()
+  let received = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    received += value.length
+    onProgress(received / total)
+  }
+}
+
+async function beginTrail() {
+  startButton.disabled = true
+  document.body.classList.add('preparing-on')
+  preparing.textContent = 'Preparing the trail…'
+
+  try {
+    await downloadTarget((fraction) => {
+      const percent = Math.round(fraction * 100)
+      preparing.textContent = `Preparing the trail… ${percent}%`
+    })
+
+    document.body.classList.add('camera-on')
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    cameraScene.systems['mindar-image-system'].start()
+  } catch (error) {
+    document.body.classList.remove('preparing-on')
+    document.body.classList.remove('camera-on')
+    startButton.disabled = false
+    status.textContent = 'The trail files could not download. Try again.'
+  }
+}
+
 startButton.addEventListener('click', () => {
-  document.body.classList.add('camera-on')
-  cameraScene.systems['mindar-image-system'].start()
+  unlockAudio()
+  beginTrail()
+})
+
+cameraScene.addEventListener('arReady', () => {
+  document.body.classList.remove('preparing-on')
   scheduleHelp()
+})
+
+cameraScene.addEventListener('arError', () => {
+  document.body.classList.remove('preparing-on')
+  document.body.classList.remove('camera-on')
+  startButton.disabled = false
+  status.textContent = 'The camera could not start. Allow the camera and try again.'
 })
 
 cardTarget.addEventListener('targetFound', () => {

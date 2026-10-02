@@ -24,7 +24,7 @@
 
     <a-scene
       id="camera-scene"
-      mindar-image="imageTargetSrc: ./targets/targets.mind; autoStart: false;"
+      mindar-image="imageTargetSrc: ./targets/targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
@@ -32,6 +32,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
       <a-entity id="card-target" mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
+
+    <p id="preparing">Preparing the trail…</p>
 
     <p id="scan-hint">Move your camera slowly towards the Viking image.</p>
 
