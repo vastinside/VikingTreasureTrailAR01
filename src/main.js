@@ -13,6 +13,7 @@ const cardTarget = document.querySelector('#card-target')
 const viewer = document.querySelector('#viewer')
 const treasureName = document.querySelector('#treasure-name')
 const treasureFact = document.querySelector('#treasure-fact')
+const closeButton = document.querySelector('#close-panel')
 
 function render() {
   const progress = loadProgress()
@@ -51,6 +52,10 @@ collectButton.addEventListener('click', () => {
 resetButton.addEventListener('click', () => {
   resetProgress()
   render()
+})
+
+closeButton.addEventListener('click', () => {
+  document.body.classList.remove('target-found')
 })
 
 render()

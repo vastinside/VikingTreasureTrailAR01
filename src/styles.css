@@ -144,3 +144,24 @@ body.target-found .panel {
   opacity: 0.7;
   cursor: default;
 }
+
+.panel-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+#collect {
+  margin-top: 0;
+}
+
+#close-panel {
+  width: fit-content;
+  padding: 0.75rem 1.1rem;
+  font: inherit;
+  color: #f4efe4;
+  background: transparent;
+  border: 1px solid #f4efe4;
+  border-radius: 999px;
+  cursor: pointer;
+}
