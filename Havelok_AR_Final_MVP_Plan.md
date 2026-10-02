@@ -111,7 +111,7 @@ A visitor should be able to:
 4. Start the AR camera.
 5. Find any of the five Viking treasure targets.
 6. See a steady discovery panel with the matching video, image, or 3D model, the name, a short fact, and a voice if that stop has one.
-7. Collect the treasure.
+7. Receive one coin automatically the first time a stop is found, with a short toast and a chime.
 8. Keep progress if the page is refreshed or reopened.
 9. Continue even if AR tracking is difficult.
 10. Complete every collectible stop in the asset list.
@@ -151,10 +151,7 @@ MindAR Detects Artwork
 Discovery Panel (video, image, or 3D model + text + optional voice)
       |
       v
-Collect Treasure
-      |
-      v
-Progress Saved Locally
+First find awards one coin (toast + chime, saved locally)
       |
       v
 Repeat Until Every Collectible Stop Is Found
@@ -329,22 +326,12 @@ Treasure Name + Short Approved Fact
 Voice, if this stop has an audio file
       |
       v
-[ Collect Treasure ]
+First time only: +1 coin, toast, chime, progress saved
 ```
 
-On collection:
+A stop that was already found opens the panel again and does not award another coin. There is no Collect button. Closing the panel leaves the coin in the save.
 
-```text
-Treasure Found!
-      |
-      v
-Progress Updated
-      |
-      v
-1 / 5
-```
-
-Closing the panel without collecting returns the visitor to scanning. The find is not saved.
+The toast is a short line such as `+1 coin` with a small gold coin drawn in CSS. It stays up for about two seconds. The completion screen shows one larger CSS coin and the total, instead of a still picture of a coin.
 
 ### Media rules
 

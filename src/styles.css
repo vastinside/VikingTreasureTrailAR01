@@ -70,10 +70,10 @@ h2 {
   display: none;
   position: fixed;
   left: 50%;
-  bottom: 1.5rem;
+  bottom: 0;
   transform: translateX(-50%);
   width: min(92vw, 28rem);
-  padding: 1rem 1.1rem;
+  padding: 0.35rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
   background: transparent;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
   border-radius: 12px;
@@ -99,9 +99,14 @@ body.camera-on #camera-scene {
 
 #viewer {
   width: 100%;
-  height: 200px;
-  margin-top: 0.75rem;
+  height: min(36vh, 280px);
+  margin-top: 0;
+  overflow: hidden;
   background: transparent;
+}
+
+#treasure-name {
+  margin-top: 0.35rem;
 }
 
 #viewer canvas {
@@ -135,10 +140,13 @@ body.camera-on #camera-scene {
 }
 
 #treasure-video.keying {
-  position: absolute;
+  position: fixed;
+  left: 0;
+  top: 0;
   width: 2px;
   height: 2px;
   opacity: 0.02;
+  pointer-events: none;
 }
 
 body.target-found .panel {
@@ -181,7 +189,7 @@ body.target-found .panel {
 .panel-actions {
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0.45rem;
 }
 
 #collect {

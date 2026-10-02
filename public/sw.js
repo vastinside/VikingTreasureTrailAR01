@@ -1,4 +1,4 @@
-const CACHE = 'havelok-trail-v5'
+const CACHE = 'havelok-trail-v6'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting())

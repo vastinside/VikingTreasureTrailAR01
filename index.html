@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Havelok's Kingdom</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -32,6 +32,12 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
       <a-entity id="target-0" mindar-image-target="targetIndex: 0"></a-entity>
       <a-entity id="target-1" mindar-image-target="targetIndex: 1"></a-entity>
+      <a-entity id="target-2" mindar-image-target="targetIndex: 2"></a-entity>
+      <a-entity id="target-3" mindar-image-target="targetIndex: 3"></a-entity>
+      <a-entity id="target-4" mindar-image-target="targetIndex: 4"></a-entity>
+      <a-entity id="target-5" mindar-image-target="targetIndex: 5"></a-entity>
+      <a-entity id="target-6" mindar-image-target="targetIndex: 6"></a-entity>
+      <a-entity id="target-7" mindar-image-target="targetIndex: 7"></a-entity>
     </a-scene>
 
     <p id="preparing">Preparing the trail…</p>
@@ -48,28 +54,31 @@
     </section>
 
     <section id="panel" class="panel">
-      <h2 id="treasure-name">Treasure</h2>
-      <p id="treasure-fact">Fact</p>
       <a-scene id="viewer" embedded renderer="alpha: true" background="transparent: true" vr-mode-ui="enabled: false">
-        <a-gltf-model
-          id="treasure-model"
-          position="0 1.15 -1.8"
-          scale="0.8 0.8 0.8"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"></a-gltf-model>
+        <a-entity position="0 1.6 -2.2" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+          <a-gltf-model id="treasure-model" rotation="90 0 0"></a-gltf-model>
+        </a-entity>
         <a-light type="ambient" intensity="0.7"></a-light>
         <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
-        <a-camera position="0 1.6 0" look-controls="enabled: true"></a-camera>
+        <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
       </a-scene>
 
       <img id="treasure-image" alt="" hidden>
-      <video id="treasure-video" playsinline muted loop hidden></video>
+      <video id="treasure-video" playsinline muted hidden></video>
       <canvas id="treasure-key" hidden></canvas>
+      <h2 id="treasure-name">Treasure</h2>
+      <p id="treasure-fact">Fact</p>
       <p id="panel-count">0 / 5</p>
       <div class="panel-actions">
         <button id="collect" type="button">Collect treasure</button>
         <button id="close-panel" type="button">Close</button>
       </div>
     </section>
+
+    <p id="coin-toast" class="coin-toast" hidden>
+      <span class="coin" aria-hidden="true"></span>
+      <span id="coin-toast-text">+1 coin</span>
+    </p>
 
     <section id="complete" class="complete">
       <p class="eyebrow">Havelok's Kingdom</p>
