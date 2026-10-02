@@ -12,9 +12,9 @@
       <p class="eyebrow">Havelok's Kingdom</p>
       <h1>Viking Treasure Trail</h1>
       <p class="lead">
-        Five Viking treasures are hidden around the trail.
+        Viking treasures are hidden around the trail.
         Find the Viking images, point your camera at them,
-        and collect all five treasures.
+        and collect every treasure.
       </p>
       <p id="progress">0 / 5 Treasures Found</p>
       <button id="reset-trail" type="button">Reset trail</button>
@@ -60,6 +60,10 @@
         <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
         <a-camera position="0 1.6 0" look-controls="enabled: true"></a-camera>
       </a-scene>
+
+      <img id="treasure-image" alt="" hidden>
+      <video id="treasure-video" playsinline muted loop hidden></video>
+      <canvas id="treasure-key" hidden></canvas>
       <p id="panel-count">0 / 5</p>
       <div class="panel-actions">
         <button id="collect" type="button">Collect treasure</button>

@@ -17,6 +17,11 @@ const viewTreasureButton = document.querySelector('#view-treasure')
 const preparing = document.querySelector('#preparing')
 const status = document.querySelector('#status')
 const treasureModel = document.querySelector('#treasure-model')
+const treasureImage = document.querySelector('#treasure-image')
+const treasureVideo = document.querySelector('#treasure-video')
+const treasureKey = document.querySelector('#treasure-key')
+const keyCtx = treasureKey.getContext('2d', { willReadFrequently: true })
+let keyFrame = 0
 const completeList = document.querySelector('#complete-list')
 const completeReset = document.querySelector('#complete-reset')
 
@@ -57,9 +62,41 @@ function render() {
 }
 
 function showTreasure(treasure) {
-  const modelChanged = !active || active.model !== treasure.model
+  const previous = active
   active = treasure
-  if (modelChanged) treasureModel.setAttribute('gltf-model', treasure.model)
+  const kind = treasure.kind || 'model'
+  const playsWebm = treasureVideo.canPlayType('video/webm; codecs="vp9"') !== ''
+
+  viewer.hidden = kind !== 'model'
+  treasureImage.hidden = kind !== 'image'
+  treasureVideo.hidden = kind !== 'video'
+  treasureKey.hidden = true
+  treasureVideo.classList.remove('keying')
+  treasureVideo.pause()
+  cancelAnimationFrame(keyFrame)
+
+  if (kind === 'model' && (!previous || previous.model !== treasure.model) && treasure.model) {
+    treasureModel.setAttribute('gltf-model', treasure.model)
+  }
+  if (kind === 'image') {
+    treasureImage.src = treasure.image
+    treasureImage.alt = treasure.name
+  }
+  if (kind === 'video') {
+    treasureVideo.innerHTML = ''
+    treasureVideo.removeAttribute('src')
+    if (treasure.videoMp4) {
+      treasureVideo.classList.add('keying')
+      treasureVideo.src = treasure.videoMp4
+      treasureKey.hidden = false
+    } else if (playsWebm && treasure.videoWebm) {
+      const source = document.createElement('source')
+      source.src = treasure.videoWebm
+      source.type = 'video/webm'
+      treasureVideo.appendChild(source)
+    }
+    treasureVideo.load()
+  }
   render()
 }
 
@@ -105,8 +142,35 @@ function openPanel() {
   document.body.classList.remove('show-help')
   document.body.classList.add('target-found')
   viewer.resize()
+  if (active.kind === 'video') {
+    treasureVideo.play().then(() => {
+      if (treasureVideo.classList.contains('keying')) drawKey()
+    }).catch(() => {})
+  }
   render()
   playVoice()
+}
+
+function drawKey() {
+  if (!treasureVideo.classList.contains('keying')) return
+  const w = treasureVideo.videoWidth
+  const h = treasureVideo.videoHeight
+  if (w && h) {
+    if (treasureKey.width !== w) treasureKey.width = w
+    if (treasureKey.height !== h) treasureKey.height = h
+    keyCtx.drawImage(treasureVideo, 0, 0, w, h)
+    const image = keyCtx.getImageData(0, 0, w, h)
+    const data = image.data
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const green = g - Math.max(r, b)
+      if (green > 28 && g > 80) data[i + 3] = 0
+    }
+    keyCtx.putImageData(image, 0, 0)
+  }
+  keyFrame = requestAnimationFrame(drawKey)
 }
 
 function onTarget(index) {
@@ -199,6 +263,8 @@ resetButton.addEventListener('click', () => {
 closeButton.addEventListener('click', () => {
   document.body.classList.remove('target-found')
   stopVoice()
+  treasureVideo.pause()
+  cancelAnimationFrame(keyFrame)
   scheduleHelp()
 })
 

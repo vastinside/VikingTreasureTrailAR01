@@ -108,6 +108,39 @@ body.camera-on #camera-scene {
   background: transparent !important;
 }
 
+#viewer[hidden],
+#treasure-image[hidden],
+#treasure-video[hidden] {
+  display: none !important;
+}
+
+#treasure-image,
+#treasure-video {
+  width: 100%;
+  max-height: 240px;
+  margin-top: 0.75rem;
+  object-fit: contain;
+  background: transparent;
+}
+
+#treasure-key {
+  width: 100%;
+  max-height: 240px;
+  margin-top: 0.75rem;
+  background: transparent;
+}
+
+#treasure-key[hidden] {
+  display: none !important;
+}
+
+#treasure-video.keying {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0.02;
+}
+
 body.target-found .panel {
   display: block;
 }
