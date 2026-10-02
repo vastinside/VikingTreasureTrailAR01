@@ -165,3 +165,26 @@ body.target-found .panel {
   border-radius: 999px;
   cursor: pointer;
 }
+
+
+#scan-hint {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  margin: 0;
+  text-align: center;
+  color: #f4efe4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  z-index: 10;
+}
+
+body.camera-on #scan-hint {
+  display: block;
+}
+
+body.target-found #scan-hint {
+  display: none;
+}
