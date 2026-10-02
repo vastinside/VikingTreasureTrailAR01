@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Havelok's Kingdom</title>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   </head>
   <body>
     <main class="screen">
@@ -15,6 +16,12 @@
         and collect all five treasures.
       </p>
       <p id="status">Starting the project…</p>
+      <a-scene embedded>
+    <a-box position="0 1.2 -2" rotation="0 30 0" color="#e2c56a"></a-box>
+        <a-light type="ambient" intensity="0.7"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
+        <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>
