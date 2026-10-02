@@ -1,4 +1,4 @@
-const CACHE = 'havelok-trail-v1'
+const CACHE = 'havelok-trail-v3'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting())
@@ -18,7 +18,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
-  const isTrailFile = url.pathname.endsWith('targets.mind') || url.pathname.endsWith('.glb')
+const isTrailFile = url.pathname.endsWith('targets.mind') || url.pathname.endsWith('.glb') || url.pathname.endsWith('.mp3')
 if (!isTrailFile) return
 
   event.respondWith(

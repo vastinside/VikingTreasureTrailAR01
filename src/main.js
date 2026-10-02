@@ -23,6 +23,7 @@ const treasureModel = document.querySelector('#treasure-model')
 const HELP_AFTER_MS = 8000
 let helpTimer = null
 let audioContext = null
+const voice = new Audio()
 
 function render() {
   const progress = loadProgress()
@@ -45,6 +46,23 @@ function render() {
 function unlockAudio() {
   if (!audioContext) audioContext = new AudioContext()
   audioContext.resume()
+  if (!axe.voice) return
+  voice.src = axe.voice
+  voice.play().then(() => {
+    voice.pause()
+    voice.currentTime = 0
+  }).catch(() => {})
+}
+
+function playVoice() {
+  if (!axe.voice) return
+  voice.currentTime = 0
+  voice.play().catch(() => {})
+}
+
+function stopVoice() {
+  voice.pause()
+  voice.currentTime = 0
 }
 
 function scheduleHelp() {
@@ -62,6 +80,7 @@ function openPanel() {
   document.body.classList.add('target-found')
   viewer.resize()
   render()
+  playVoice()
 }
 
 async function downloadTarget(onProgress) {
@@ -146,6 +165,7 @@ resetButton.addEventListener('click', () => {
 
 closeButton.addEventListener('click', () => {
   document.body.classList.remove('target-found')
+  stopVoice()
   scheduleHelp()
 })
 
