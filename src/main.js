@@ -11,12 +11,17 @@ const startButton = document.querySelector('#start-camera')
 const cameraScene = document.querySelector('#camera-scene')
 const cardTarget = document.querySelector('#card-target')
 const viewer = document.querySelector('#viewer')
+const treasureName = document.querySelector('#treasure-name')
+const treasureFact = document.querySelector('#treasure-fact')
 
 function render() {
   const progress = loadProgress()
   const found = countFound(progress)
   progressLabel.textContent = `${found} / 5 Treasures Found`
   panelCount.textContent = `${found} / 5`
+
+  treasureName.textContent = axe.name
+treasureFact.textContent = axe.fact
 
   if (progress[axe.id]) {
     collectButton.textContent = 'Collected'

@@ -2,7 +2,7 @@ export const treasures = [
   {
     id: 'axe',
     name: 'Viking Axe',
-    fact: 'This box stands in for the axe model.',
+    fact: 'The axe fact is coming from treasures.js.',
     targetIndex: 0,
   },
 ]
