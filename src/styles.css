@@ -264,3 +264,51 @@ body.preparing-on #scan-hint {
   opacity: 0.7;
   cursor: default;
 }
+
+.complete {
+  display: none;
+  min-height: 100vh;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  max-width: 36rem;
+}
+
+.complete p,
+.credit {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.credit {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+#complete-reset {
+  width: fit-content;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  color: #f4efe4;
+  background: transparent;
+  border: 1px solid #e2c56a;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+body.trail-complete .complete {
+  display: flex;
+}
+
+body.trail-complete .screen,
+body.trail-complete #camera-scene,
+body.trail-complete .panel,
+body.trail-complete #scan-hint,
+body.trail-complete .help,
+body.trail-complete #preparing {
+  display: none;
+}

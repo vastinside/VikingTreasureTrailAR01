@@ -17,6 +17,8 @@ const viewTreasureButton = document.querySelector('#view-treasure')
 const preparing = document.querySelector('#preparing')
 const status = document.querySelector('#status')
 const treasureModel = document.querySelector('#treasure-model')
+const completeList = document.querySelector('#complete-list')
+const completeReset = document.querySelector('#complete-reset')
 
 const HELP_AFTER_MS = 8000
 let helpTimer = null
@@ -30,6 +32,17 @@ function render() {
   const total = treasures.length
   progressLabel.textContent = `${found} / ${total} Treasures Found`
   panelCount.textContent = `${found} / ${total}`
+
+  const complete = found === total && total > 0
+    document.body.classList.toggle('trail-complete', complete)
+    if (complete) stopVoice()
+
+    completeList.replaceChildren()
+    treasures.forEach((item) => {
+    const line = document.createElement('p')
+    line.textContent = `${progress[item.id] ? '✓' : '○'} ${item.name}`
+    completeList.appendChild(line)
+    })
 
   treasureName.textContent = active.name
   treasureFact.textContent = active.fact
@@ -63,6 +76,7 @@ function unlockAudio() {
 }
 
 function playVoice() {
+    if (document.body.classList.contains('trail-complete')) return
   if (!active.voice) {
     stopVoice()
     return
@@ -198,6 +212,11 @@ viewTreasureButton.addEventListener('click', () => {
   const next = treasures.find((item) => !progress[item.id]) || treasures[0]
   showTreasure(next)
   openPanel()
+})
+
+completeReset.addEventListener('click', () => {
+  resetProgress()
+  render()
 })
 
 showTreasure(treasures[0])

@@ -9,4 +9,4 @@ Browser-based AR treasure trail for Havelok's Kingdom using A-Frame and MindAR.
 
 <b>localStorage</b> will remember which treasures were collected, in the browser only. No login and no database.
 
-The live site will be <b>https://havelok.vastinside.co.uk</b>. A test address such as https://havelok-test.vastinside.co.uk comes later, when Julia needs to try it on a phone. GitHub holds the source. GitHub Pages is only a backup copy of the same built files, not a second version you edit by hand.
+The live site is <b>https://havelok.vastinside.co.uk</b>. GitHub holds the source. GitHub Pages is only a backup copy of the same built files, not a second version you edit by hand.

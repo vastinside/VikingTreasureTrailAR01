@@ -220,6 +220,17 @@ Treasures Found
 2 / 7
 ```
 
+### Held until the real files arrive
+
+Do not add this to the running app yet. The practice card and bear stay as they are. When the first real model, image, or video is in the project, do these four steps in order:
+
+1. In `src\config\treasures.js`, add `kind: 'model'` to the axe and the helmet. Leave their current files alone.
+2. In `index.html`, inside `#panel` and directly under the `<a-scene id="viewer">` block, add a hidden image and a hidden video: `#treasure-image` and `#treasure-video` with `playsinline` on the video.
+3. In `src\main.js`, read those two elements. `showTreasure` shows the viewer only for `model`, the image only for `image`, and the video only for `video`. `openPanel` plays the video when the kind is `video`. Close pauses that video.
+4. In `src\styles.css`, give `#treasure-image` and `#treasure-video` the same width and max height as `#viewer`.
+
+Prove it once with a practice picture, then put the helmet back to `kind: 'model'`. Sword and Shield stay out of `treasures.js` until their files exist.
+
 ---
 
 ## 5. Welcome Screen
@@ -233,11 +244,12 @@ HAVELOK'S KINGDOM
 
 Viking Treasure Trail
 
-Five Viking treasures are hidden around the trail.
+Viking treasures are hidden around the trail.
 Find the Viking images, point your camera at them,
-and collect all five treasures.
+and collect every treasure.
 
-0 / 5 Treasures Found
+The score on this screen comes from the treasure list.
+Do not hard-code a number such as 5.
 
 [ Start the Trail ]
 
@@ -760,7 +772,7 @@ Collect
 Progress
   |
   v
-5 / 5
+Every collectible stop found
   |
   v
 Completion Screen
@@ -788,10 +800,10 @@ The visitor must never become permanently stuck.
 
 ### Phase 7: Julia Preview
 
-Deploy a test version such as:
+Deploy the same build to the live address:
 
 ```text
-https://havelok-test.vastinside.co.uk
+https://havelok.vastinside.co.uk
 ```
 
 Provide a printable target and ask Julia to test the experience as a visitor.
@@ -836,7 +848,7 @@ The MVP is ready when:
 - treasures can be collected in any order
 - the non-AR fallback opens the same panel
 - reset works
-- 5 / 5 opens the completion screen
+- A full score opens the completion screen
 - Vast Inside credit appears only on the final page
 - the production build works from Vast Inside hosting
 - the same build exists on the backup host
