@@ -1,39 +1,12 @@
 # havelok-ar-treasure-trail
 Browser-based AR treasure trail for Havelok's Kingdom using A-Frame and MindAR.
 
-havelok-ar-treasure-trail/
-│
-├── README.md
-├── .gitignore
-├── package.json
-├── vite.config.js
-│
-├── docs/
-│   └── Havelok_AR_Final_MVP_Plan.md
-│
-├── public/
-│   ├── models/
-│   ├── targets/
-│   ├── images/
-│   └── audio/
-│
-├── src/
-│   ├── main.js
-│   ├── styles.css
-│   │
-│   ├── config/
-│   │   └── treasures.js
-│   │
-│   ├── ar/
-│   │   └── tracker.js
-│   │
-│   ├── game/
-│   │   ├── progress.js
-│   │   └── treasure-manager.js
-│   │
-│   └── ui/
-│       └── interface.js
-│
-└── .github/
-    └── workflows/
-        └── backup-deploy.yml
+<b>A-Frame</b> is a way to describe a 3D scene in HTML. A box, a model, or a light is an entity in a scene. 
+
+<b>MindAR</b> is the tracker. It watches the camera for a printed picture you compiled ahead of time, then tells A-Frame where to place the treasure.
+
+<b>Vite</b> is the development server. It serves the page on your computer, bundles the JavaScript, and later produces the folder you upload. Phone cameras only work on a secure address (https://), so the first page stays on your computer. The Vast Inside subdomain comes after the page actually runs.
+
+<b>localStorage</b> will remember which treasures were collected, in the browser only. No login and no database.
+
+The live site will be <b>https://havelok.vastinside.co.uk</b>. A test address such as https://havelok-test.vastinside.co.uk comes later, when Julia needs to try it on a phone. GitHub holds the source. GitHub Pages is only a backup copy of the same built files, not a second version you edit by hand.
