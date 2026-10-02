@@ -18,6 +18,7 @@ const keepTryingButton = document.querySelector('#keep-trying')
 const viewTreasureButton = document.querySelector('#view-treasure')
 const preparing = document.querySelector('#preparing')
 const status = document.querySelector('#status')
+const treasureModel = document.querySelector('#treasure-model')
 
 const HELP_AFTER_MS = 8000
 let helpTimer = null
@@ -156,6 +157,8 @@ keepTryingButton.addEventListener('click', () => {
 viewTreasureButton.addEventListener('click', () => {
   openPanel()
 })
+
+treasureModel.setAttribute('gltf-model', axe.model)
 
 render()
 

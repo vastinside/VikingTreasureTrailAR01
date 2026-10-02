@@ -18,7 +18,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
-  if (!url.pathname.endsWith('targets.mind')) return
+  const isTrailFile = url.pathname.endsWith('targets.mind') || url.pathname.endsWith('.glb')
+if (!isTrailFile) return
 
   event.respondWith(
     (async () => {

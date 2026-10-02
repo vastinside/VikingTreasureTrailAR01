@@ -50,10 +50,11 @@
       <h2 id="treasure-name">Treasure</h2>
       <p id="treasure-fact">Fact</p>
       <a-scene id="viewer" embedded renderer="alpha: true" background="transparent: true" vr-mode-ui="enabled: false">
-        <a-box
-          position="0 1.2 -2"
-          color="#e2c56a"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"></a-box>
+        <a-gltf-model
+          id="treasure-model"
+          position="0 1.15 -1.8"
+          scale="0.8 0.8 0.8"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"></a-gltf-model>
         <a-light type="ambient" intensity="0.7"></a-light>
         <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
         <a-camera position="0 1.6 0" look-controls="enabled: true"></a-camera>
