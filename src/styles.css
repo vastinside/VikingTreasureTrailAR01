@@ -62,7 +62,7 @@ h2 {
   cursor: pointer;
 }
 
-a-scene {
+#camera-scene {
   display: none;
 }
 
@@ -87,13 +87,19 @@ body.camera-on .screen {
   display: none;
 }
 
-body.camera-on a-scene {
+body.camera-on #camera-scene {
   display: block;
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   margin: 0;
+}
+
+#viewer {
+  width: 100%;
+  height: 200px;
+  margin-top: 0.75rem;
 }
 
 body.target-found .panel {

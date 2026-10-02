@@ -21,6 +21,7 @@
     </main>
 
     <a-scene
+      id="camera-scene"
       mindar-image="imageTargetSrc: ./targets/targets.mind; autoStart: false;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
@@ -31,8 +32,17 @@
     </a-scene>
 
     <section id="panel" class="panel">
-      <h2>Picture found</h2>
-      <p>This panel stays on the screen. The camera only recognised the card.</p>
+      <h2>Viking Axe</h2>
+      <p>Drag inside the frame to look around. This box stands in for the axe model.</p>
+      <a-scene id="viewer" embedded>
+        <a-box
+          position="0 1.2 -2"
+          color="#e2c56a"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"></a-box>
+        <a-light type="ambient" intensity="0.7"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
+        <a-camera position="0 1.6 0" look-controls="enabled: true"></a-camera>
+      </a-scene>
     </section>
 
     <script type="module" src="/src/main.js"></script>
