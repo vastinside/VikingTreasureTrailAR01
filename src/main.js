@@ -14,6 +14,11 @@ const viewer = document.querySelector('#viewer')
 const treasureName = document.querySelector('#treasure-name')
 const treasureFact = document.querySelector('#treasure-fact')
 const closeButton = document.querySelector('#close-panel')
+const keepTryingButton = document.querySelector('#keep-trying')
+const viewTreasureButton = document.querySelector('#view-treasure')
+
+const HELP_AFTER_MS = 8000
+let helpTimer = null
 
 function render() {
   const progress = loadProgress()
@@ -22,7 +27,7 @@ function render() {
   panelCount.textContent = `${found} / 5`
 
   treasureName.textContent = axe.name
-treasureFact.textContent = axe.fact
+  treasureFact.textContent = axe.fact
 
   if (progress[axe.id]) {
     collectButton.textContent = 'Collected'
@@ -33,15 +38,31 @@ treasureFact.textContent = axe.fact
   }
 }
 
-startButton.addEventListener('click', () => {
-  document.body.classList.add('camera-on')
-  cameraScene.systems['mindar-image-system'].start()
-})
+function scheduleHelp() {
+  clearTimeout(helpTimer)
+  helpTimer = setTimeout(() => {
+    if (!document.body.classList.contains('target-found')) {
+      document.body.classList.add('show-help')
+    }
+  }, HELP_AFTER_MS)
+}
 
-cardTarget.addEventListener('targetFound', () => {
+function openPanel() {
+  clearTimeout(helpTimer)
+  document.body.classList.remove('show-help')
   document.body.classList.add('target-found')
   viewer.resize()
   render()
+}
+
+startButton.addEventListener('click', () => {
+  document.body.classList.add('camera-on')
+  cameraScene.systems['mindar-image-system'].start()
+  scheduleHelp()
+})
+
+cardTarget.addEventListener('targetFound', () => {
+  openPanel()
 })
 
 collectButton.addEventListener('click', () => {
@@ -56,6 +77,16 @@ resetButton.addEventListener('click', () => {
 
 closeButton.addEventListener('click', () => {
   document.body.classList.remove('target-found')
+  scheduleHelp()
+})
+
+keepTryingButton.addEventListener('click', () => {
+  document.body.classList.remove('show-help')
+  scheduleHelp()
+})
+
+viewTreasureButton.addEventListener('click', () => {
+  openPanel()
 })
 
 render()

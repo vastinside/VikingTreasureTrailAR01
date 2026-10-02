@@ -188,3 +188,52 @@ body.camera-on #scan-hint {
 body.target-found #scan-hint {
   display: none;
 }
+
+
+.help {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  z-index: 10;
+  text-align: center;
+  color: #f4efe4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.help .panel-actions {
+  justify-content: center;
+}
+
+body.show-help .help {
+  display: block;
+}
+
+body.target-found .help,
+body.show-help #scan-hint {
+  display: none;
+}
+
+#keep-trying {
+  width: fit-content;
+  padding: 0.75rem 1.1rem;
+  font: inherit;
+  color: #f4efe4;
+  background: transparent;
+  border: 1px solid #f4efe4;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+#view-treasure {
+  width: fit-content;
+  padding: 0.75rem 1.1rem;
+  font: inherit;
+  color: #1c140e;
+  background: #e2c56a;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
