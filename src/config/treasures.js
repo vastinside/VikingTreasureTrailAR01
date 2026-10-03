@@ -7,7 +7,6 @@ export const treasures = [
     video: './videos/viking.mp4',
     voice: './audio/viking.mp3',
     targetIndex: 0,
-    collectible: false,
   },
   {
     id: 'axe',

@@ -1,6 +1,14 @@
 import './styles.css'
 import { treasures } from './config/treasures.js'
 import { loadProgress, collectTreasure, resetProgress } from './game/progress.js'
+import {
+  cancelPlayback,
+  clipFinished,
+  clipSourceReady,
+  createPlayback,
+  finishPlayback,
+  scanMarker,
+} from './game/playback.js'
 
 const progressLabel = document.querySelector('#progress')
 const panelCount = document.querySelector('#panel-count')
@@ -25,12 +33,23 @@ const treasureImage = document.querySelector('#treasure-image')
 const treasureVideo = document.querySelector('#treasure-video')
 const treasureKey = document.querySelector('#treasure-key')
 const keyCtx = treasureKey.getContext('2d', { willReadFrequently: true })
+const keyBuffer = document.createElement('canvas')
+const keyBufferCtx = keyBuffer.getContext('2d', { willReadFrequently: true })
+keyBuffer.className = 'key-buffer'
+keyBuffer.setAttribute('aria-hidden', 'true')
+document.body.appendChild(keyBuffer)
 let keyFrame = 0
+let videoToken = 0
 let keyContent = null
 let keySeen = null
 let keyStack = null
-let playingIndex = null
-let lostTimer = null
+let cropBox = null
+let drawingVideo = false
+let videoRetryAt = 0
+let videoUnlock = 0
+let playback = createPlayback()
+let playToken = 0
+let markVideoDone = () => {}
 const completeList = document.querySelector('#complete-list')
 const completeReset = document.querySelector('#complete-reset')
 
@@ -41,7 +60,9 @@ let active = null
 let hearingTreasure = false
 const voice = new Audio()
 const jackpotSound = new Audio('./audio/jackpot.mp3')
+jackpotSound.muted = true
 const endingMusic = new Audio('./audio/ending.mp3')
+endingMusic.muted = true
 const jackpotEl = document.querySelector('#jackpot')
 const completeTotal = document.querySelector('#complete-total')
 const scored = treasures.filter((item) => item.collectible !== false)
@@ -100,20 +121,16 @@ function render() {
     return
   }
   collectButton.hidden = false
-  if (progress[active.id]) {
-    collectButton.textContent = 'Collected'
-    collectButton.disabled = true
-  } else {
-    collectButton.textContent = 'Collect treasure'
-    collectButton.disabled = false
-  }
+  const collected = Boolean(progress[active.id])
+  collectButton.classList.toggle('is-collected', collected)
+  collectButton.disabled = collected
+  collectButton.setAttribute('aria-label', collected ? 'Collected' : 'Collect treasure')
 }
-
-let rewardFinish = null
 
 function hideJackpot() {
   clearTimeout(jackpotTimer)
   jackpotEl.hidden = true
+  jackpotSound.muted = true
   jackpotSound.pause()
   jackpotSound.currentTime = 0
 }
@@ -122,6 +139,7 @@ function showJackpot() {
   if (document.body.classList.contains('trail-complete')) return
   jackpotEl.hidden = false
   if (!voice.paused) voice.volume = 0.2
+  jackpotSound.muted = false
   jackpotSound.volume = 1
   jackpotSound.currentTime = 0
   jackpotSound.play().catch(() => {})
@@ -138,6 +156,7 @@ function showJackpot() {
 function playEnding() {
   stopVoice()
   hideJackpot()
+  endingMusic.muted = false
   endingMusic.volume = 1
   endingMusic.currentTime = 0
   endingMusic.play().catch(() => {})
@@ -149,36 +168,11 @@ function awardFind(treasure) {
   collectTreasure(treasure.id)
   const finished = scoredFound(loadProgress()) === scored.length
   render()
-  if (!finished) {
-    showJackpot()
-    return
-  }
-  rewardFor = treasure.id
-  rewardFinish = () => {
-    if (rewardFor !== treasure.id) return
-    rewardFor = null
-    rewardFinish = null
-    playEnding()
-  }
-  if (!treasure.voice) {
-    rewardFinish()
-    return
-  }
-  const onDone = () => {
-    voice.removeEventListener('ended', onDone)
-    voice.removeEventListener('error', onDone)
-    if (rewardFinish) rewardFinish()
-  }
-  voice.addEventListener('ended', onDone)
-  voice.addEventListener('error', onDone)
-  setTimeout(() => {
-    if (voice.paused && voice.currentTime === 0 && rewardFinish) rewardFinish()
-  }, 1200)
+  if (finished) playEnding()
+  else showJackpot()
 }
 
 function stopRewards() {
-  rewardFor = null
-  rewardFinish = null
   hideJackpot()
   endingMusic.pause()
   endingMusic.currentTime = 0
@@ -211,24 +205,34 @@ function showTreasure(treasure) {
     treasureImage.alt = treasure.name
   }
   if (kind === 'video') {
-    treasureVideo.innerHTML = ''
-    treasureVideo.removeAttribute('src')
+    videoToken += 1
+    cropBox = null
+    drawingVideo = false
+    cancelAnimationFrame(keyFrame)
+    keyCtx.clearRect(0, 0, treasureKey.width, treasureKey.height)
+    treasureKey.hidden = true
+    const nextSrc = treasure.video || treasure.videoMp4 || ''
+    const currentFile = (treasureVideo.currentSrc || treasureVideo.src || '').split('?')[0].split('/').pop()
+    const nextFile = nextSrc.split('?')[0].split('/').pop()
+    const alreadyLoaded = currentFile && currentFile === nextFile
+    if (!alreadyLoaded) {
+      treasureVideo.innerHTML = ''
+      treasureVideo.removeAttribute('src')
+    }
+    treasureVideo.muted = true
+    treasureVideo.playsInline = true
+    treasureVideo.setAttribute('playsinline', '')
+    treasureVideo.setAttribute('webkit-playsinline', '')
+    treasureVideo.loop = Boolean(treasure.voice)
+    if (treasure.voice) treasureVideo.setAttribute('loop', '')
+    else treasureVideo.removeAttribute('loop')
+    treasureVideo.classList.add('keying')
     if (treasure.video) {
-      treasureVideo.muted = true
-      treasureVideo.loop = false
-      treasureVideo.playsInline = true
-      treasureVideo.classList.add('keying')
       treasureVideo.dataset.key = 'black'
-      treasureVideo.src = treasure.video
-      treasureKey.hidden = false
+      if (!alreadyLoaded) treasureVideo.src = treasure.video
     } else if (treasure.videoMp4) {
-      treasureVideo.muted = true
-      treasureVideo.loop = false
-      treasureVideo.playsInline = true
-      treasureVideo.classList.add('keying')
       treasureVideo.dataset.key = 'green'
-      treasureVideo.src = treasure.videoMp4
-      treasureKey.hidden = false
+      if (!alreadyLoaded) treasureVideo.src = treasure.videoMp4
     } else if (playsWebm && treasure.videoWebm) {
       const source = document.createElement('source')
       source.src = treasure.videoWebm
@@ -244,28 +248,46 @@ function unlockAudio() {
   audioContext.resume()
   const primer = treasures.find((item) => item.voice)
   if (!primer) return
+  jackpotSound.muted = true
+  jackpotSound.volume = 0
+  jackpotSound.play().catch(() => {})
+  jackpotSound.pause()
+  jackpotSound.currentTime = 0
+  endingMusic.muted = true
+  endingMusic.volume = 0
+  endingMusic.play().catch(() => {})
+  endingMusic.pause()
+  endingMusic.currentTime = 0
+  voice.muted = true
   voice.volume = 0
   voice.src = primer.voice
-  jackpotSound.volume = 0
-  jackpotSound.play().then(() => {
-    jackpotSound.pause()
-    jackpotSound.currentTime = 0
-    jackpotSound.volume = 1
-  }).catch(() => {})
-  endingMusic.volume = 0
-  endingMusic.play().then(() => {
-    endingMusic.pause()
-    endingMusic.currentTime = 0
-    endingMusic.volume = 1
-  }).catch(() => {})
-  voice.play().then(() => {
-    voice.volume = 1
-    if (hearingTreasure) return
-    voice.pause()
-    voice.currentTime = 0
-  }).catch(() => {
-    voice.volume = 1
-  })
+  const voicePlay = voice.play()
+  voice.pause()
+  voice.currentTime = 0
+  if (voicePlay && voicePlay.then) {
+    voicePlay.then(() => {
+      if (hearingTreasure) return
+      voice.pause()
+      voice.currentTime = 0
+    }).catch(() => {})
+  }
+  const unlock = ++videoUnlock
+  treasureVideo.muted = true
+  treasureVideo.playsInline = true
+  treasureVideo.setAttribute('playsinline', '')
+  treasureVideo.setAttribute('webkit-playsinline', '')
+  const videoPlay = treasureVideo.play()
+  if (videoPlay && videoPlay.then) {
+    videoPlay.then(() => {
+      if (unlock !== videoUnlock || drawingVideo) return
+      treasureVideo.pause()
+      try {
+        treasureVideo.currentTime = 0
+      } catch {
+        // The phone may still be opening the file.
+      }
+    }).catch(() => {})
+  }
 }
 
 function playVoice() {
@@ -275,6 +297,7 @@ function playVoice() {
     return
   }
   hearingTreasure = true
+  voice.muted = false
   voice.volume = 1
   voice.src = active.voice
   voice.currentTime = 0
@@ -285,12 +308,85 @@ function stopVoice() {
   hearingTreasure = false
   voice.pause()
   voice.currentTime = 0
-  if (rewardFinish) rewardFinish()
+}
+
+function beginClip(treasure) {
+  const token = ++playToken
+  let voiceEnded = !treasure.voice
+  let videoEnded = treasure.kind !== 'video'
+  const tryFinish = () => {
+    if (token !== playToken) return
+    if (!clipFinished({
+      hasVoice: Boolean(treasure.voice),
+      voiceEnded,
+      hasVideo: treasure.kind === 'video',
+      videoEnded,
+    })) return
+    const result = finishPlayback(playback, treasure.targetIndex, Date.now())
+    playback = result.state
+    if (result.action === 'finish') awardFind(treasure)
+  }
+  markVideoDone = () => {
+    if (token !== playToken) return
+    videoEnded = true
+    tryFinish()
+  }
+  const stopPicture = () => {
+    if (treasure.kind !== 'video') return
+    drawingVideo = false
+    treasureVideo.loop = false
+    treasureVideo.removeAttribute('loop')
+    treasureVideo.pause()
+    cancelAnimationFrame(keyFrame)
+    videoEnded = true
+  }
+  if (treasure.voice) {
+    const onVoice = () => {
+      if (token !== playToken) return
+      voice.removeEventListener('ended', onVoice)
+      voice.removeEventListener('error', onVoice)
+      voiceEnded = true
+      stopPicture()
+      tryFinish()
+    }
+    voice.addEventListener('ended', onVoice)
+    voice.addEventListener('error', onVoice)
+    setTimeout(() => {
+      if (token !== playToken) return
+      if (voice.paused && voice.currentTime === 0) onVoice()
+    }, 1200)
+  }
+  if (treasure.kind === 'video' && !treasure.voice) {
+    const onVideo = () => {
+      if (token !== playToken) return
+      treasureVideo.removeEventListener('ended', onVideo)
+      videoEnded = true
+      tryFinish()
+    }
+    treasureVideo.addEventListener('ended', onVideo)
+  }
+  tryFinish()
+}
+
+function stopPlayback() {
+  playToken += 1
+  markVideoDone = () => {}
+  drawingVideo = false
+  const index = active ? active.targetIndex : 0
+  playback = cancelPlayback(playback, index, Date.now()).state
+  stopVoice()
+  treasureVideo.pause()
+  cancelAnimationFrame(keyFrame)
 }
 
 function scheduleHelp() {
   clearTimeout(helpTimer)
+  if (!document.body.classList.contains('camera-on')) {
+    document.body.classList.remove('show-help')
+    return
+  }
   helpTimer = setTimeout(() => {
+    if (!document.body.classList.contains('camera-on')) return
     if (!document.body.classList.contains('target-found')) {
       document.body.classList.add('show-help')
     }
@@ -470,18 +566,44 @@ function resumeSpin() {
 
 function playActiveVideo() {
   if (!active || active.kind !== 'video') return
+  videoUnlock += 1
+  const token = videoToken
+  const expected = active.video || active.videoMp4 || ''
   const startDraw = () => {
-    if (!active || active.kind !== 'video') return
+    if (token !== videoToken || !active || active.kind !== 'video') return
     if (!treasureVideo.classList.contains('keying')) return
+    if (!clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) return
+    drawingVideo = true
+    treasureKey.hidden = false
     cancelAnimationFrame(keyFrame)
     drawKey()
   }
-  const start = () => {
-    if (!active || active.kind !== 'video') return
-    treasureVideo.play().then(startDraw).catch(() => {})
+  const begin = () => {
+    if (token !== videoToken || !active || active.kind !== 'video') return
+    treasureVideo.play().then(startDraw).catch(() => {
+      if (token !== videoToken) return
+      startDraw()
+    })
   }
-  if (treasureVideo.readyState >= 2) start()
-  else treasureVideo.addEventListener('loadeddata', start, { once: true })
+  const start = () => {
+    if (token !== videoToken || !active || active.kind !== 'video') return
+    if (!clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) {
+      treasureVideo.addEventListener('loadeddata', start, { once: true })
+      treasureVideo.addEventListener('canplay', start, { once: true })
+      return
+    }
+    if (treasureVideo.currentTime > 0.05) {
+      treasureVideo.addEventListener('seeked', begin, { once: true })
+      try {
+        treasureVideo.currentTime = 0
+      } catch {
+        begin()
+      }
+      return
+    }
+    begin()
+  }
+  start()
 }
 
 function openPanel() {
@@ -498,16 +620,6 @@ function openPanel() {
   playVoice()
 }
 
-function isLightLeak(r, g, b) {
-  const max = r > g ? (r > b ? r : b) : (g > b ? g : b)
-  const min = r < g ? (r < b ? r : b) : (g < b ? g : b)
-  if (max < 78 && max - min < 26) return true
-  if (max >= 155) return false
-  const cyan = g > 40 && b > 40 && Math.abs(g - b) < 40 && r + 12 < g && r + 12 < b
-  const red = r > 32 && r < 130 && g < 55 && b < 55 && r > g + 12 && r > b + 12
-  return cyan || red
-}
-
 function keyOutBlack(data, w, h) {
   const count = w * h
   if (!keyContent || keyContent.length !== count) {
@@ -517,7 +629,7 @@ function keyOutBlack(data, w, h) {
   } else {
     keySeen.fill(0)
   }
-  const thresh = 42
+  const thresh = 24
   for (let p = 0, i = 0; p < count; p++, i += 4) {
     const r = data[i]
     const g = data[i + 1]
@@ -551,105 +663,112 @@ function keyOutBlack(data, w, h) {
   for (let p = 0, i = 0; p < count; p++, i += 4) {
     if (keySeen[p]) data[i + 3] = 0
   }
+}
 
-  top = 0
-  for (let p = 0; p < count; p++) {
-    if (data[p * 4 + 3] === 0) keyStack[top++] = p
+function contentBounds(data, w, h) {
+  let minX = w
+  let minY = h
+  let maxX = -1
+  let maxY = -1
+  const step = 2
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
+      if (data[(y * w + x) * 4 + 3] > 16) {
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+      }
+    }
   }
-  const clearLeak = (n) => {
-    const i = n * 4
-    if (data[i + 3] === 0) return
-    if (!isLightLeak(data[i], data[i + 1], data[i + 2])) return
-    data[i + 3] = 0
-    keyStack[top++] = n
-  }
-  while (top) {
-    const p = keyStack[--top]
-    const x = p % w
-    if (x > 0) clearLeak(p - 1)
-    if (x + 1 < w) clearLeak(p + 1)
-    if (p >= w) clearLeak(p - w)
-    if (p + w < count) clearLeak(p + w)
-  }
-
-  for (let p = 0, i = 0; p < count; p++, i += 4) {
-    if (data[i + 3] === 0) continue
-    const x = p % w
-    const y = (p / w) | 0
-    const open = (x > 0 && data[(p - 1) * 4 + 3] === 0)
-      || (x + 1 < w && data[(p + 1) * 4 + 3] === 0)
-      || (y > 0 && data[(p - w) * 4 + 3] === 0)
-      || (y + 1 < h && data[(p + w) * 4 + 3] === 0)
-    if (!open) continue
-    const max = Math.max(data[i], data[i + 1], data[i + 2])
-    if (max >= 72) continue
-    data[i + 3] = Math.round(((max - 28) / 44) * 255)
-    if (data[i + 3] < 0) data[i + 3] = 0
+  if (maxX < 0) return null
+  const pad = 10
+  return {
+    x: Math.max(0, minX - pad),
+    y: Math.max(0, minY - pad),
+    r: Math.min(w - 1, maxX + pad + step),
+    b: Math.min(h - 1, maxY + pad + step),
   }
 }
 
 function drawKey() {
+  if (!drawingVideo) return
   if (!treasureVideo.classList.contains('keying')) return
-  const w = treasureVideo.videoWidth
-  const h = treasureVideo.videoHeight
-  if (w && h) {
-    const long = w > h ? w : h
-    const scale = long > 480 ? 480 / long : 1
-    const cw = Math.max(1, Math.round(w * scale))
-    const ch = Math.max(1, Math.round(h * scale))
-    if (treasureKey.width !== cw) treasureKey.width = cw
-    if (treasureKey.height !== ch) treasureKey.height = ch
-    keyCtx.drawImage(treasureVideo, 0, 0, cw, ch)
-    const image = keyCtx.getImageData(0, 0, cw, ch)
-    const data = image.data
-    if (treasureVideo.dataset.key === 'green') {
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i]
-        const g = data[i + 1]
-        const b = data[i + 2]
-        const green = g - Math.max(r, b)
-        if (green > 28 && g > 80) data[i + 3] = 0
-      }
-    } else {
-      keyOutBlack(data, cw, ch)
+  if (drawingVideo && (treasureVideo.paused || treasureVideo.ended)) {
+    const now = performance.now()
+    if (now >= videoRetryAt) {
+      if (treasureVideo.ended) treasureVideo.currentTime = 0
+      videoRetryAt = now + 400
+      treasureVideo.play().catch(() => {})
     }
-    keyCtx.putImageData(image, 0, 0)
+  } else {
+    videoRetryAt = 0
   }
-  keyFrame = requestAnimationFrame(drawKey)
+  try {
+  const expected = active && (active.video || active.videoMp4)
+  if (clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) {
+    const w = treasureVideo.videoWidth
+    const h = treasureVideo.videoHeight
+    if (w && h) {
+      const long = w > h ? w : h
+        const scale = long > 480 ? 480 / long : 1
+      const cw = Math.max(1, Math.round(w * scale))
+      const ch = Math.max(1, Math.round(h * scale))
+      if (keyBuffer.width !== cw) keyBuffer.width = cw
+      if (keyBuffer.height !== ch) keyBuffer.height = ch
+      keyBufferCtx.drawImage(treasureVideo, 0, 0, cw, ch)
+      const image = keyBufferCtx.getImageData(0, 0, cw, ch)
+      const data = image.data
+      if (treasureVideo.dataset.key === 'green') {
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i]
+          const g = data[i + 1]
+          const b = data[i + 2]
+          const green = g - Math.max(r, b)
+          if (green > 28 && g > 80) data[i + 3] = 0
+        }
+      } else {
+        keyOutBlack(data, cw, ch)
+      }
+      keyBufferCtx.putImageData(image, 0, 0)
+      const bounds = contentBounds(data, cw, ch)
+      if (bounds) {
+        if (!cropBox) cropBox = bounds
+        else {
+          cropBox.x = Math.min(cropBox.x, bounds.x)
+          cropBox.y = Math.min(cropBox.y, bounds.y)
+          cropBox.r = Math.max(cropBox.r, bounds.r)
+          cropBox.b = Math.max(cropBox.b, bounds.b)
+        }
+      }
+      const box = cropBox || { x: 0, y: 0, r: cw - 1, b: ch - 1 }
+      const bw = Math.max(1, box.r - box.x + 1)
+      const bh = Math.max(1, box.b - box.y + 1)
+      if (treasureKey.width !== bw) treasureKey.width = bw
+      if (treasureKey.height !== bh) treasureKey.height = bh
+      keyCtx.clearRect(0, 0, bw, bh)
+      keyCtx.drawImage(keyBuffer, box.x, box.y, bw, bh, 0, 0, bw, bh)
+    }
+  }
+  } catch {
+    // Keep drawing on the next frame if one frame fails.
+  }
+  if (drawingVideo) keyFrame = requestAnimationFrame(drawKey)
 }
 
 function onTarget(index) {
   const treasure = treasures.find((item) => item.targetIndex === index)
   if (!treasure) return
-  clearTimeout(lostTimer)
-  lostTimer = null
-  if (playingIndex === index) return
-  const stillPlaying = active
-    && active.id === treasure.id
-    && treasure.kind === 'video'
-    && !treasureVideo.paused
-    && !treasureVideo.ended
-  playingIndex = index
-  if (stillPlaying) {
-    document.body.classList.add('target-found')
-    playVoice()
-    return
-  }
+  const result = scanMarker(playback, index, Date.now())
+  playback = result.state
+  if (result.action !== 'start') return
   document.body.classList.add('target-found')
   showTreasure(treasure)
+  beginClip(treasure)
   openPanel()
-  awardFind(treasure)
 }
 
-function onTargetLost(index) {
-  if (playingIndex !== index) return
-  clearTimeout(lostTimer)
-  lostTimer = setTimeout(() => {
-    if (playingIndex !== index) return
-    playingIndex = null
-    stopVoice()
-  }, 400)
-}
+function onTargetLost() {}
 
 async function downloadTarget(onProgress) {
   const response = await fetch('./targets/targets.mind')
@@ -728,15 +847,14 @@ collectButton.addEventListener('click', () => {
 
 resetButton.addEventListener('click', () => {
   resetProgress()
+  stopPlayback()
   stopRewards()
   render()
 })
 
 closeButton.addEventListener('click', () => {
   document.body.classList.remove('target-found')
-  stopVoice()
-  treasureVideo.pause()
-  cancelAnimationFrame(keyFrame)
+  stopPlayback()
   scheduleHelp()
 })
 
@@ -746,15 +864,22 @@ keepTryingButton.addEventListener('click', () => {
 })
 
 viewTreasureButton.addEventListener('click', () => {
+  if (!document.body.classList.contains('camera-on')) return
   const progress = loadProgress()
-  const next = scored.find((item) => !progress[item.id]) || scored[0]
+  const next = scored.find((item) => item.id !== 'viking' && !progress[item.id])
+  if (!next) return
+  const result = scanMarker(playback, next.targetIndex, Date.now())
+  playback = result.state
+  if (result.action !== 'start') return
   document.body.classList.add('target-found')
   showTreasure(next)
+  beginClip(next)
   openPanel()
 })
 
 completeReset.addEventListener('click', () => {
   resetProgress()
+  stopPlayback()
   stopRewards()
   render()
 })
