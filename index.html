@@ -9,17 +9,19 @@
   </head>
   <body>
     <main class="screen">
-      <p class="eyebrow">Havelok's Kingdom</p>
+      <p class="brand">Havelok's Kingdom</p>
       <h1>Viking Treasure Trail</h1>
       <p class="lead">
         Viking treasures are hidden around the trail.
         Find the Viking images, point your camera at them,
         and collect every treasure.
       </p>
-      <p id="progress">0 / 5 Treasures Found</p>
-      <button id="reset-trail" type="button">Reset trail</button>
+      <p id="progress">0 of 7 treasures found</p>
       <p id="status">Starting the project…</p>
-      <button id="start-camera" type="button">Start camera</button>
+      <div class="actions">
+        <button id="start-camera" class="btn" type="button">Start camera</button>
+        <button id="reset-trail" class="btn btn-quiet" type="button">Reset trail</button>
+      </div>
     </main>
 
     <a-scene
@@ -48,20 +50,22 @@
     <section id="help" class="help">
       <p>Having trouble finding the treasure?</p>
       <div class="panel-actions">
-        <button id="keep-trying" type="button">Keep trying</button>
-        <button id="view-treasure" type="button">View treasure</button>
+        <button id="keep-trying" class="btn btn-quiet" type="button">Keep trying</button>
+        <button id="view-treasure" class="btn" type="button">View treasure</button>
       </div>
     </section>
 
     <section id="panel" class="panel">
       <a-scene id="viewer" embedded renderer="alpha: true" background="transparent: true" vr-mode-ui="enabled: false">
-        <a-entity position="0 1.6 -2.2" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+        <a-entity id="model-spin" position="0 1.6 -2.2" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
           <a-gltf-model id="treasure-model" rotation="90 0 0"></a-gltf-model>
         </a-entity>
         <a-light type="ambient" intensity="0.7"></a-light>
         <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
         <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
       </a-scene>
+      <canvas id="spark" hidden></canvas>
+      <p id="turn-hint" hidden>Drag to turn</p>
 
       <img id="treasure-image" alt="" hidden>
       <video id="treasure-video" playsinline muted hidden></video>
@@ -70,23 +74,28 @@
       <p id="treasure-fact">Fact</p>
       <p id="panel-count">0 / 5</p>
       <div class="panel-actions">
-        <button id="collect" type="button">Collect treasure</button>
-        <button id="close-panel" type="button">Close</button>
+        <button id="collect" class="btn" type="button">Collect treasure</button>
+        <button id="close-panel" class="btn btn-quiet" type="button">Close</button>
       </div>
     </section>
 
-    <p id="coin-toast" class="coin-toast" hidden>
-      <span class="coin" aria-hidden="true"></span>
-      <span id="coin-toast-text">+1 coin</span>
-    </p>
+    <div id="jackpot" class="jackpot" hidden>
+      <img src="./images/token.png" alt="">
+      <p class="jackpot-title">You found it</p>
+      <p class="jackpot-count">+1 coin</p>
+    </div>
 
     <section id="complete" class="complete">
-      <p class="eyebrow">Havelok's Kingdom</p>
-      <h1>Treasure trail complete</h1>
+      <div class="ending">
+        <p class="brand">Havelok's Kingdom</p>
+        <img id="complete-coin" src="./images/token-gold.png" alt="">
+        <h1>Congratulations</h1>
+        <p>Congratulations, you have reached the end of the Viking Treasure Trail. Go to the start and collect your reward.</p>
+        <p id="complete-total"></p>
+      </div>
       <div id="complete-list"></div>
-      <p>You found every treasure on this trail.</p>
       <p class="credit">Technical AR development by Vast Inside Ltd</p>
-      <button id="complete-reset" type="button">Reset trail</button>
+      <button id="complete-reset" class="btn btn-quiet" type="button">Reset trail</button>
     </section>
 
     <script type="module" src="/src/main.js"></script>
