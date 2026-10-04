@@ -71,10 +71,28 @@ let shownFound = -1
 let awaitingModel = false
 let wantsReveal = false
 let revealFrame = 0
+let revealToken = 0
 let sparkFrame = 0
 let dragging = false
 let lastDragX = 0
+let modelZoom = 1
+let modelPanX = 0
+let modelPanY = 0
+let fittedScale = 1
+let fittedCenter = { x: 0, y: 0, z: 0 }
+const modelPointers = new Map()
+let pinchStart = 0
+let pinchZoomStart = 1
+let panOrigin = null
 const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function hideHeadsetButtons() {
+  document.querySelectorAll('.a-enter-vr, .a-enter-ar').forEach((button) => button.remove())
+}
+
+hideHeadsetButtons()
+cameraScene.addEventListener('loaded', hideHeadsetButtons)
+viewer.addEventListener('loaded', hideHeadsetButtons)
 
 function playFindEffect() {
   document.body.classList.remove('treasure-arrive')
@@ -195,6 +213,9 @@ function showTreasure(treasure) {
 
   if (kind === 'model' && (!previous || previous.model !== treasure.model) && treasure.model) {
     awaitingModel = true
+    modelZoom = 1
+    modelPanX = 0
+    modelPanY = 0
     treasureModel.setAttribute('rotation', treasure.rotation || '0 0 0')
     treasureModel.setAttribute('gltf-model', treasure.model)
   } else if (kind === 'model') {
@@ -404,6 +425,9 @@ function fitTreasureModel() {
   }
 
   const three = window.AFRAME.THREE
+  camera.aspect = canvas.clientWidth / canvas.clientHeight
+  camera.updateProjectionMatrix()
+  camera.updateMatrixWorld(true)
   const spin = treasureModel.object3D.parent
   treasureModel.object3D.position.set(0, 0, 0)
   treasureModel.object3D.scale.set(1, 1, 1)
@@ -416,37 +440,49 @@ function fitTreasureModel() {
   treasureModel.object3D.position.copy(localCenter).multiplyScalar(-1)
   treasureModel.object3D.updateMatrixWorld(true)
 
-  const fitted = new three.Box3().setFromObject(mesh)
-  const corners = [
-    [fitted.min.x, fitted.min.y, fitted.min.z],
-    [fitted.min.x, fitted.min.y, fitted.max.z],
-    [fitted.min.x, fitted.max.y, fitted.min.z],
-    [fitted.min.x, fitted.max.y, fitted.max.z],
-    [fitted.max.x, fitted.min.y, fitted.min.z],
-    [fitted.max.x, fitted.min.y, fitted.max.z],
-    [fitted.max.x, fitted.max.y, fitted.min.z],
-    [fitted.max.x, fitted.max.y, fitted.max.z],
-  ]
-  let maxAbs = 0
-  for (const [x, y, z] of corners) {
-    const projected = new three.Vector3(x, y, z).project(camera)
-    maxAbs = Math.max(maxAbs, Math.abs(projected.x), Math.abs(projected.y))
-  }
-  if (maxAbs === 0) return
-
-  const scale = 0.72 / maxAbs
-  treasureModel.setAttribute('scale', `${scale} ${scale} ${scale}`)
-  treasureModel.setAttribute(
-    'position',
-    `${-localCenter.x * scale} ${-localCenter.y * scale} ${-localCenter.z * scale}`,
-  )
+  const sphere = new three.Sphere()
+  new three.Box3().setFromObject(mesh).getBoundingSphere(sphere)
+  const distance = Math.max(0.4, camera.position.distanceTo(sphere.center))
+  const halfH = Math.tan((camera.fov * Math.PI) / 360) * distance
+  const halfW = halfH * camera.aspect
+  const limit = Math.min(halfW, halfH) * 0.6
+  fittedScale = sphere.radius > 0 ? limit / sphere.radius : 1
+  fittedCenter = { x: localCenter.x, y: localCenter.y, z: localCenter.z }
+  revealToken += 1
+  cancelAnimationFrame(revealFrame)
+  applyModelView()
   if (wantsReveal) {
     wantsReveal = false
-    playModelReveal(scale, localCenter.x, localCenter.y, localCenter.z)
+    playModelReveal(fittedScale, localCenter.x, localCenter.y, localCenter.z)
+  }
+}
+
+function applyModelView() {
+  const size = fittedScale * modelZoom
+  treasureModel.object3D.scale.set(size, size, size)
+  treasureModel.object3D.position.set(
+    -fittedCenter.x * size + modelPanX,
+    -fittedCenter.y * size + modelPanY,
+    -fittedCenter.z * size,
+  )
+}
+
+function pointerSpan() {
+  const points = [...modelPointers.values()]
+  if (points.length < 2) return 0
+  return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y)
+}
+
+function pointerMid() {
+  const points = [...modelPointers.values()]
+  return {
+    x: (points[0].x + points[1].x) / 2,
+    y: (points[0].y + points[1].y) / 2,
   }
 }
 
 function playModelReveal(fullScale, cx, cy, cz) {
+  const token = ++revealToken
   cancelAnimationFrame(revealFrame)
   burstStars()
   viewer.classList.remove('chest-open')
@@ -455,6 +491,7 @@ function playModelReveal(fullScale, cx, cy, cz) {
   if (!motionOk) return
 
   const place = (size) => {
+    if (token !== revealToken) return
     treasureModel.object3D.scale.set(size, size, size)
     treasureModel.object3D.position.set(-cx * size, -cy * size, -cz * size)
   }
@@ -462,11 +499,12 @@ function playModelReveal(fullScale, cx, cy, cz) {
   const dur = 780
   place(fullScale * 0.04)
   const tick = (now) => {
+    if (token !== revealToken) return
     const t = Math.min(1, (now - start) / dur)
     const c1 = 1.70158
     const c3 = c1 + 1
     const eased = 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2
-    place(fullScale * Math.max(0.04, eased))
+    place(fullScale * Math.max(0.04, Math.min(1, eased)))
     if (t < 1) revealFrame = requestAnimationFrame(tick)
     else place(fullScale)
   }
@@ -614,7 +652,10 @@ function openPanel() {
   if (active.kind === 'model' && !awaitingModel) wantsReveal = true
   viewer.resize()
   fitTreasureModel()
-  requestAnimationFrame(fitTreasureModel)
+  requestAnimationFrame(() => {
+    viewer.resize()
+    fitTreasureModel()
+  })
   if (active.kind === 'video') requestAnimationFrame(playActiveVideo)
   render()
   playVoice()
@@ -892,6 +933,7 @@ treasureModel.addEventListener('model-loaded', () => {
 
 viewer.addEventListener('pointerdown', (event) => {
   if (viewer.hidden || !active || active.kind !== 'model') return
+  modelPointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
   dragging = true
   lastDragX = event.clientX
   viewer.classList.add('turning')
@@ -901,26 +943,64 @@ viewer.addEventListener('pointerdown', (event) => {
   } catch {
     // The drag still follows the pointer if capture is unavailable.
   }
+  if (modelPointers.size === 2) {
+    pinchStart = pointerSpan()
+    pinchZoomStart = modelZoom
+    const mid = pointerMid()
+    panOrigin = { x: modelPanX, y: modelPanY, mx: mid.x, my: mid.y }
+  }
 })
 
 viewer.addEventListener('pointermove', (event) => {
-  if (!dragging) return
-  const dx = event.clientX - lastDragX
+  if (!modelPointers.has(event.pointerId)) return
+  const previous = modelPointers.get(event.pointerId)
+  modelPointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+  if (modelPointers.size >= 2 && pinchStart > 0) {
+    const span = pointerSpan()
+    if (pinchStart > 8) {
+      modelZoom = Math.min(2.2, Math.max(0.6, pinchZoomStart * (span / pinchStart)))
+    }
+    if (panOrigin) {
+      const mid = pointerMid()
+      modelPanX = Math.min(0.7, Math.max(-0.7, panOrigin.x + (mid.x - panOrigin.mx) * 0.004))
+      modelPanY = Math.min(0.7, Math.max(-0.7, panOrigin.y - (mid.y - panOrigin.my) * 0.004))
+    }
+    applyModelView()
+    return
+  }
+  const dx = event.clientX - previous.x
   lastDragX = event.clientX
   modelSpin.object3D.rotation.y += dx * 0.01
 })
 
 function endDrag(event) {
-  if (!dragging) return
-  dragging = false
-  viewer.classList.remove('turning')
+  if (!modelPointers.has(event.pointerId) && !dragging) return
+  modelPointers.delete(event.pointerId)
   try {
     if (viewer.hasPointerCapture(event.pointerId)) viewer.releasePointerCapture(event.pointerId)
   } catch {
     // Capture was never taken.
   }
+  if (modelPointers.size >= 2) return
+  pinchStart = 0
+  panOrigin = null
+  if (modelPointers.size === 1) {
+    const remaining = [...modelPointers.values()][0]
+    lastDragX = remaining.x
+    return
+  }
+  dragging = false
+  viewer.classList.remove('turning')
   resumeSpin()
 }
+
+viewer.addEventListener('wheel', (event) => {
+  if (viewer.hidden || !active || active.kind !== 'model') return
+  event.preventDefault()
+  const next = modelZoom * (event.deltaY > 0 ? 0.92 : 1.08)
+  modelZoom = Math.min(2.2, Math.max(0.6, next))
+  applyModelView()
+}, { passive: false })
 
 viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)

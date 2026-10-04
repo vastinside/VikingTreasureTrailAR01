@@ -10,6 +10,11 @@
   src: url("./fonts/Rye-Regular.woff2") format("woff2");
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -243,8 +248,8 @@ h2 {
   transform: translateX(-50%);
   width: min(92vw, 28rem);
   max-height: 100dvh;
-  overflow-y: auto;
-  padding: 0.35rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
+  overflow: hidden;
+  padding: 0.2rem 1rem calc(0.35rem + env(safe-area-inset-bottom));
   background: transparent;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
   border-radius: 12px;
@@ -252,7 +257,7 @@ h2 {
 }
 
 .panel p {
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 body.camera-on .screen,
@@ -267,11 +272,30 @@ body.camera-on #camera-scene {
   width: 100%;
   height: 100%;
   margin: 0;
+  overflow: hidden;
+}
+
+.a-enter-vr,
+.a-enter-vr-button,
+.a-enter-ar,
+.a-enter-ar-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.camera-on > video:not(#treasure-video) {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 #viewer {
   width: 100%;
-  height: min(36vh, 280px);
+  height: min(34vh, 280px);
+  flex: 0 0 auto;
   margin-top: 0;
   overflow: hidden;
   background: transparent;
@@ -288,7 +312,7 @@ body.camera-on #camera-scene {
   left: 0;
   top: 0;
   width: 100%;
-  height: min(36vh, 280px);
+  height: min(34vh, 280px);
   pointer-events: none;
   z-index: 3;
 }
@@ -313,9 +337,10 @@ body.camera-on #camera-scene {
 }
 
 #treasure-name {
-  margin-top: 0.55rem;
-  font-size: 1.55rem;
-  line-height: 1.2;
+  flex: none;
+  margin-top: 0.3rem;
+  font-size: 1.35rem;
+  line-height: 1.15;
 }
 
 #treasure-name::after {
@@ -323,14 +348,15 @@ body.camera-on #camera-scene {
   display: block;
   width: 2.6rem;
   height: 2px;
-  margin-top: 0.45rem;
+  margin-top: 0.25rem;
   background: #f2c14b;
 }
 
 #treasure-fact {
-  margin-top: 0.75rem;
-  font-size: 1.02rem;
-  line-height: 1.45;
+  flex: none;
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  line-height: 1.28;
   color: #f6edd8;
 }
 
@@ -346,19 +372,29 @@ body.camera-on #camera-scene {
 
 #treasure-image,
 #treasure-video {
-  width: 100%;
-  max-height: 240px;
-  margin-top: 0.75rem;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(22vh, 180px);
+  margin: 0.15rem auto 0;
   object-fit: contain;
   background: transparent;
+  flex: 0 1 auto;
+  min-height: 0;
 }
 
 #treasure-key {
-  width: 100%;
+  display: block;
+  width: auto;
+  max-width: 100%;
   height: auto;
-  max-height: min(36vh, 320px, calc(100dvh - 280px));
-  margin-top: 0.35rem;
+  max-height: min(22vh, 180px);
+  margin: 0.15rem auto 0;
+  object-fit: contain;
   background: transparent;
+  flex: 0 1 auto;
+  min-height: 0;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
 }
 
@@ -390,7 +426,29 @@ body.camera-on #camera-scene {
 }
 
 body.target-found .panel {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+body.camera-on.target-found .panel {
+  top: 0;
+  height: 100dvh;
+  padding-top: calc(0.35rem + env(safe-area-inset-top));
+}
+
+body.camera-on.target-found #viewer,
+body.camera-on.target-found #spark {
+  height: max(11rem, calc(100dvh - 17.5rem));
+}
+
+body.camera-on.target-found #treasure-key,
+body.camera-on.target-found #treasure-image {
+  width: 100%;
+  height: max(11rem, calc(100dvh - 17.5rem));
+  max-height: none;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 body.target-found:not(.camera-on) .panel {
@@ -437,11 +495,16 @@ body.treasure-arrive::before {
   color: #e2c56a;
 }
 
+#panel-count {
+  flex: none;
+}
+
 .panel-actions {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 0.85rem;
+  margin-top: 0.45rem;
 }
 
 
@@ -831,6 +894,8 @@ body.trail-complete #complete-reset {
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
+  width: min(100%, 34rem);
+  min-width: 0;
   text-align: center;
 }
 
@@ -840,6 +905,8 @@ body.trail-complete #complete-reset {
 }
 
 #complete-list {
+  width: min(100%, 34rem);
+  min-width: 0;
   text-align: center;
 }
 
@@ -860,6 +927,18 @@ body.trail-complete #complete-reset {
 
 body.trail-complete .complete {
   display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  margin: 0;
+  overflow-y: auto;
+  background: rgba(28, 20, 14, 0.68);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  text-shadow: 0 1px 2px rgba(12, 8, 4, 0.95), 0 0 14px rgba(12, 8, 4, 0.75);
 }
 
 body.trail-complete .screen,
