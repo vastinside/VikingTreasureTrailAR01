@@ -9,33 +9,32 @@
   </head>
   <body>
     <main class="screen">
-      <p class="brand">Havelok's Kingdom</p>
-      <h1>Viking Treasure Trail</h1>
-      <p class="ar-logo">
-        <svg viewBox="0 0 64 52" aria-hidden="true">
-          <path d="M32 3 L57 16 L32 29 L7 16 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path>
-          <path d="M7 16 L32 29 L32 49 L7 36 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path>
-          <path d="M57 16 L32 29 L32 49 L57 36 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path>
-        </svg>
-        AR
-      </p>
-      <p class="lead">
-        Viking treasures are hidden around the trail.
-        Find the Viking images, point your camera at them,
-        and collect every treasure.
-      </p>
-      <p id="progress">0 of 8 treasures found</p>
-      <p id="status">Ready to look.</p>
-      <div class="actions">
-        <button id="start-camera" class="btn" type="button">
-          <svg class="btn-mark" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3.2 L20.2 7.4 L12 11.6 L3.8 7.4 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-            <path d="M3.8 7.4 L12 11.6 L12 20 L3.8 15.8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-            <path d="M20.2 7.4 L12 11.6 L12 20 L20.2 15.8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-          </svg>
-          Start camera
-        </button>
-        <button id="reset-trail" class="btn btn-quiet" type="button">Reset trail</button>
+      <div class="screen-main">
+        <img class="trail-mark" src="./images/token-gold.png" alt="Viking Treasure Trail">
+        <p class="lead">
+          Viking treasures are hidden around the trail.
+          Find the Viking images, point your camera at them,
+          and collect every treasure.
+        </p>
+        <p id="progress">0 of 8 treasures found</p>
+        <p id="status">Ready to look.</p>
+        <div class="actions">
+          <button id="start-camera" class="btn" type="button">
+            <svg class="btn-mark" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.2 L20.2 7.4 L12 11.6 L3.8 7.4 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+              <path d="M3.8 7.4 L12 11.6 L12 20 L3.8 15.8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+              <path d="M20.2 7.4 L12 11.6 L12 20 L20.2 15.8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+            </svg>
+            Start camera
+          </button>
+          <button id="reset-trail" class="btn btn-quiet" type="button">Reset trail</button>
+        </div>
+      </div>
+      <div class="screen-logos">
+        <img class="logo-kingdom" src="./images/haveloks-kingdom.png" alt="Havelok's Kingdom">
+        <span class="logo-vast-wrap">
+          <img class="logo-vast" src="./images/vast-inside.png" alt="Vast Inside">
+        </span>
       </div>
     </main>
 
@@ -110,15 +109,15 @@
 
     <div id="jackpot" class="jackpot" hidden>
       <img src="./images/token.png" alt="">
-      <p class="jackpot-title">You found it</p>
-      <p class="jackpot-count">+1 coin</p>
+      <p class="jackpot-title">You Found It</p>
+      <p class="jackpot-count">+1 Coin</p>
     </div>
 
     <section id="complete" class="complete">
       <div class="ending">
         <p class="brand">Havelok's Kingdom</p>
         <div class="coin-stage">
-          <img id="complete-coin" src="./images/token-gold.png" alt="">
+          <img id="complete-coin" src="./images/token.png" alt="">
         </div>
         <h1>Congratulations</h1>
         <p>Congratulations, you have reached the end of the Viking Treasure Trail. Go to the start and collect your reward.</p>

@@ -26,21 +26,33 @@ body {
 .screen {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  gap: 0.85rem;
-  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  gap: 0;
+  padding: calc(1rem + env(safe-area-inset-top)) 1.35rem calc(1.35rem + env(safe-area-inset-bottom));
   max-width: 36rem;
   margin-inline: auto;
   text-align: center;
 }
 
-.screen::before {
+.screen-main {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.screen-main::before {
   content: "";
   position: absolute;
-  top: 18%;
+  top: 8%;
   left: 50%;
   width: 16rem;
   height: 16rem;
@@ -50,25 +62,64 @@ body {
   pointer-events: none;
 }
 
-.ar-logo {
+.trail-mark {
   position: relative;
   z-index: 1;
+  width: min(52vw, 13.5rem);
+  height: auto;
+  margin: 0;
+}
+
+.screen-logos {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  margin: 0.1rem 0 0;
-  color: #f2c14b;
-  font-family: Rye, Georgia, serif;
-  font-size: 1.35rem;
-  line-height: 1;
-  text-shadow: 0 1px 0 #4a3018;
+  gap: 0.95rem;
+  width: 100%;
+  margin-top: 1.25rem;
 }
 
-.ar-logo svg {
-  width: 4.6rem;
-  height: auto;
+.logo-kingdom,
+.logo-vast {
   display: block;
+  height: auto;
+}
+
+.logo-kingdom {
+  width: min(62vw, 15.5rem);
+}
+
+.logo-vast-wrap {
+  position: relative;
+  display: block;
+  width: min(72vw, 17.5rem);
+  overflow: hidden;
+}
+
+.logo-vast {
+  width: 100%;
+  animation: logo-arrive 0.8s ease 0.35s both;
+}
+
+.logo-vast-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 248, 230, 0.72) 50%,
+    transparent 62%
+  );
+  transform: translateX(-140%);
+  pointer-events: none;
+  -webkit-mask-image: url("/images/vast-inside.png");
+  mask-image: url("/images/vast-inside.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  animation: logo-shine 5.5s ease 1.2s infinite;
 }
 
 .brand,
@@ -587,14 +638,17 @@ body.preparing-on #scan-hint {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: fixed;
-  left: 50%;
-  top: 38%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   z-index: 30;
-  width: min(80vw, 16rem);
+  width: 100%;
+  margin: 0;
+  padding: 0 1rem 8vh;
   text-align: center;
   pointer-events: none;
+  background: rgba(8, 6, 4, 0.52);
+  animation: jackpot-veil 0.45s ease;
 }
 
 .jackpot[hidden] {
@@ -602,26 +656,33 @@ body.preparing-on #scan-hint {
 }
 
 .jackpot img {
-  width: min(24vw, 92px);
+  width: min(78vw, 22rem);
   height: auto;
-  animation: coin-pop 0.6s cubic-bezier(0.2, 0.85, 0.2, 1.15);
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  animation:
+    coin-pop 0.7s cubic-bezier(0.2, 0.85, 0.2, 1.15),
+    coin-shine 1.4s ease 0.55s both;
 }
 
 .jackpot-title,
 .jackpot-count {
-  margin: 0.15rem 0 0;
-  color: #f4efe4;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  margin: 0.2rem 0 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
   animation: coin-rise 0.4s ease 0.18s both;
 }
 
 .jackpot-title {
-  font-size: 1.15rem;
+  margin-top: 0.35rem;
+  color: #fff;
+  font-size: 1.7rem;
 }
 
 .jackpot-count {
-  color: #e2c56a;
-  font-size: 1.45rem;
+  color: #ffe14a;
+  font-size: 1.65rem;
+  animation-delay: 0.34s;
 }
 
 .coin-stage {
@@ -728,6 +789,49 @@ body.preparing-on #scan-hint {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes jackpot-veil {
+  from {
+    background-color: rgba(8, 6, 4, 0);
+  }
+  to {
+    background-color: rgba(8, 6, 4, 0.52);
+  }
+}
+
+@keyframes coin-shine {
+  0% {
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  }
+  45% {
+    filter: drop-shadow(0 0 18px rgba(242, 193, 75, 0.85));
+  }
+  100% {
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  }
+}
+
+@keyframes logo-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logo-shine {
+  0%,
+  58% {
+    transform: translateX(-140%);
+  }
+  82%,
+  100% {
+    transform: translateX(140%);
   }
 }
 
@@ -852,6 +956,7 @@ body.trail-complete #complete-reset {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jackpot,
   .jackpot img,
   #complete-coin,
   .jackpot-title,
@@ -870,7 +975,9 @@ body.trail-complete #complete-reset {
   body.trail-complete .credit,
   body.trail-complete #complete-reset,
   body.trail-complete .coin-stage::before,
-  body.trail-complete .coin-stage::after {
+  body.trail-complete .coin-stage::after,
+  .logo-vast,
+  .logo-vast-wrap::after {
     animation: none;
   }
 }
