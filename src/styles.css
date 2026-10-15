@@ -1,0 +1,1058 @@
+* {
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: Rye;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/Rye-Regular.woff2") format("woff2");
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #f4efe4;
+  background: #1c140e;
+}
+
+.screen {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0;
+  padding: calc(1rem + env(safe-area-inset-top)) 1.35rem calc(1.35rem + env(safe-area-inset-bottom));
+  max-width: 36rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.screen-main {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.screen-main::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  width: 16rem;
+  height: 16rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(242, 193, 75, 0.18), transparent 68%);
+  pointer-events: none;
+}
+
+.trail-mark {
+  position: relative;
+  z-index: 1;
+  width: min(52vw, 13.5rem);
+  height: auto;
+  margin: 0;
+}
+
+.screen-logos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95rem;
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.logo-kingdom,
+.logo-vast {
+  display: block;
+  height: auto;
+}
+
+.logo-kingdom {
+  width: min(62vw, 15.5rem);
+}
+
+.logo-vast-wrap {
+  position: relative;
+  display: block;
+  width: min(72vw, 17.5rem);
+  overflow: hidden;
+}
+
+.logo-vast {
+  width: 100%;
+  animation: logo-arrive 0.8s ease 0.35s both;
+}
+
+.logo-vast-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 248, 230, 0.72) 50%,
+    transparent 62%
+  );
+  transform: translateX(-140%);
+  pointer-events: none;
+  -webkit-mask-image: url("/images/vast-inside.png");
+  mask-image: url("/images/vast-inside.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  animation: logo-shine 5.5s ease 1.2s infinite;
+}
+
+.brand,
+.screen h1,
+.ending h1,
+#treasure-name,
+#treasure-fact {
+  font-family: Rye, Georgia, serif;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: 0.01em;
+}
+
+.brand,
+.screen h1,
+.ending h1,
+#treasure-name {
+  color: #f2c14b;
+  text-shadow: 0 1px 0 #4a3018;
+}
+
+.brand {
+  font-size: 1.2rem;
+}
+
+.screen h1,
+.ending h1 {
+  font-size: 2.05rem;
+  line-height: 1.2;
+}
+
+.lead {
+  max-width: 34rem;
+  color: #f4efe4;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 1.7rem;
+}
+
+.lead,
+#status,
+.panel p,
+.complete p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.lead,
+#treasure-fact,
+.ending p {
+  max-width: 38rem;
+  text-wrap: pretty;
+}
+
+#status {
+  color: #e2c56a;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.btn {
+  width: fit-content;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.15rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  color: #1c140e;
+  background: #e2c56a;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.btn-mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+}
+
+.btn:hover {
+  background: #edd078;
+}
+
+.btn:active {
+  background: #c9a84a;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #f4efe4;
+  outline-offset: 3px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btn-quiet {
+  color: #f4efe4;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(244, 239, 228, 0.55);
+}
+
+.btn-quiet:hover {
+  background: rgba(244, 239, 228, 0.08);
+}
+
+.btn-quiet:active {
+  background: rgba(244, 239, 228, 0.16);
+}
+
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+#collect[hidden] {
+  display: none !important;
+}
+
+.btn-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.btn-icon .icon-collected {
+  display: none;
+}
+
+.btn-icon.is-collected .icon-collect {
+  display: none;
+}
+
+.btn-icon.is-collected .icon-collected {
+  display: block;
+}
+
+.btn-icon.is-collected:disabled {
+  opacity: 1;
+}
+
+#camera-scene {
+  display: none;
+}
+
+.panel {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: 0.2rem 1rem calc(0.35rem + env(safe-area-inset-bottom));
+  background: transparent;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.panel p {
+  margin-top: 0.35rem;
+}
+
+body.camera-on .screen,
+body.target-found .screen {
+  display: none;
+}
+
+body.camera-on #camera-scene {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.a-enter-vr,
+.a-enter-vr-button,
+.a-enter-ar,
+.a-enter-ar-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.camera-on > video:not(#treasure-video) {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+#viewer {
+  width: 100%;
+  height: min(34vh, 280px);
+  flex: 0 0 auto;
+  margin-top: 0;
+  overflow: hidden;
+  background: transparent;
+  touch-action: none;
+  cursor: grab;
+}
+
+#viewer.turning {
+  cursor: grabbing;
+}
+
+#spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: min(34vh, 280px);
+  pointer-events: none;
+  z-index: 3;
+}
+
+#spark[hidden] {
+  display: none !important;
+}
+
+#turn-hint {
+  margin: 0.15rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #e2c56a;
+}
+
+#viewer .a-enter-vr {
+  display: none !important;
+}
+
+#viewer.chest-open {
+  animation: chest-glow 0.8s ease;
+}
+
+#treasure-name {
+  flex: none;
+  margin-top: 0.3rem;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+#treasure-name::after {
+  content: "";
+  display: block;
+  width: 2.6rem;
+  height: 2px;
+  margin-top: 0.25rem;
+  background: #f2c14b;
+}
+
+#treasure-fact {
+  flex: none;
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  line-height: 1.28;
+  color: #f6edd8;
+}
+
+#viewer canvas {
+  background: transparent !important;
+}
+
+#viewer[hidden],
+#treasure-image[hidden],
+#treasure-video[hidden] {
+  display: none !important;
+}
+
+#treasure-image,
+#treasure-video {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(22vh, 180px);
+  margin: 0.15rem auto 0;
+  object-fit: contain;
+  background: transparent;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+#treasure-key {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(22vh, 180px);
+  margin: 0.15rem auto 0;
+  object-fit: contain;
+  background: transparent;
+  flex: 0 1 auto;
+  min-height: 0;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
+}
+
+.key-buffer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 2px;
+  opacity: 0.02;
+  pointer-events: none;
+}
+
+#treasure-key[hidden] {
+  display: none !important;
+}
+
+#treasure-video.keying {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 2px !important;
+  height: 2px !important;
+  max-height: 2px;
+  margin: 0;
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.target-found .panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+body.camera-on.target-found .panel {
+  top: 0;
+  height: 100dvh;
+  padding-top: calc(0.35rem + env(safe-area-inset-top));
+}
+
+body.camera-on.target-found #viewer,
+body.camera-on.target-found #spark {
+  height: max(11rem, calc(100dvh - 17.5rem));
+}
+
+body.camera-on.target-found #treasure-key,
+body.camera-on.target-found #treasure-image {
+  width: 100%;
+  height: max(11rem, calc(100dvh - 17.5rem));
+  max-height: none;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+body.target-found:not(.camera-on) .panel {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+body.treasure-arrive .panel {
+  animation: panel-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.treasure-arrive:not(.camera-on) .panel {
+  animation: panel-rise-center 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.treasure-arrive #treasure-name,
+body.treasure-arrive #treasure-fact {
+  animation: coin-rise 0.45s ease both;
+}
+
+body.treasure-arrive #treasure-fact {
+  animation-delay: 0.12s;
+}
+
+body.treasure-arrive::before {
+  content: "";
+  position: fixed;
+  inset: 10px;
+  border: 2px solid #e2c56a;
+  border-radius: 18px;
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0;
+  animation: frame-flash 0.9s ease forwards;
+}
+
+#panel-count.score-pop {
+  animation: coin-rise 0.35s ease;
+}
+
+#progress {
+  margin: 0;
+  color: #e2c56a;
+}
+
+#panel-count {
+  flex: none;
+}
+
+.panel-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+}
+
+
+#scan-hint {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  margin: 0;
+  text-align: center;
+  color: #f4efe4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  z-index: 10;
+}
+
+body.camera-on #scan-hint {
+  display: block;
+}
+
+body.camera-on:not(.target-found) #scan-hint {
+  animation: hint-pulse 2.4s ease-in-out infinite;
+}
+
+body.target-found #scan-hint {
+  display: none;
+}
+
+
+.help {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  z-index: 10;
+  text-align: center;
+  color: #f4efe4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.help .panel-actions {
+  justify-content: center;
+}
+
+body.camera-on.show-help .help {
+  display: block;
+}
+
+body.target-found .help,
+body.show-help #scan-hint {
+  display: none;
+}
+
+#preparing {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 1.5rem;
+  transform: translateX(-50%);
+  width: min(92vw, 28rem);
+  margin: 0;
+  text-align: center;
+  color: #f4efe4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  z-index: 20;
+}
+
+body.preparing-on #preparing {
+  display: block;
+}
+
+body.preparing-on #scan-hint {
+  display: none;
+}
+
+.jackpot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  margin: 0;
+  padding: 0 1rem 8vh;
+  text-align: center;
+  pointer-events: none;
+  background: rgba(8, 6, 4, 0.52);
+  animation: jackpot-veil 0.45s ease;
+}
+
+.jackpot[hidden] {
+  display: none !important;
+}
+
+.jackpot img {
+  width: min(78vw, 22rem);
+  height: auto;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  animation:
+    coin-pop 0.7s cubic-bezier(0.2, 0.85, 0.2, 1.15),
+    coin-shine 1.4s ease 0.55s both;
+}
+
+.jackpot-title,
+.jackpot-count {
+  margin: 0.2rem 0 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+  animation: coin-rise 0.4s ease 0.18s both;
+}
+
+.jackpot-title {
+  margin-top: 0.35rem;
+  color: #fff;
+  font-size: 1.7rem;
+}
+
+.jackpot-count {
+  color: #ffe14a;
+  font-size: 1.65rem;
+  animation-delay: 0.34s;
+}
+
+.coin-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.coin-stage::before,
+.coin-stage::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff6d8;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#complete-coin {
+  width: min(32vw, 128px);
+  height: auto;
+  align-self: center;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+    color: #e2c56a;
+  }
+}
+
+@keyframes panel-rise {
+  from {
+    transform: translateX(-50%) translateY(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes panel-rise-center {
+  from {
+    transform: translate(-50%, -42%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+@keyframes frame-flash {
+  0% {
+    opacity: 0;
+    inset: 18px;
+  }
+  30% {
+    opacity: 1;
+    inset: 10px;
+  }
+  100% {
+    opacity: 0;
+    inset: 10px;
+  }
+}
+
+@keyframes chest-glow {
+  0% {
+    filter: brightness(1.8) drop-shadow(0 0 16px #e2c56a);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+@keyframes coin-pop {
+  0% {
+    transform: scale(0.45) rotate(-16deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.06) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes coin-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes jackpot-veil {
+  from {
+    background-color: rgba(8, 6, 4, 0);
+  }
+  to {
+    background-color: rgba(8, 6, 4, 0.52);
+  }
+}
+
+@keyframes coin-shine {
+  0% {
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  }
+  45% {
+    filter: drop-shadow(0 0 18px rgba(242, 193, 75, 0.85));
+  }
+  100% {
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  }
+}
+
+@keyframes logo-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logo-shine {
+  0%,
+  58% {
+    transform: translateX(-140%);
+  }
+  82%,
+  100% {
+    transform: translateX(140%);
+  }
+}
+
+@keyframes end-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes coin-glow {
+  0% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  40% {
+    filter: drop-shadow(0 0 18px rgba(242, 193, 75, 0.9));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px rgba(242, 193, 75, 0.35));
+  }
+}
+
+@keyframes title-gleam {
+  0% {
+    text-shadow: 0 1px 0 #4a3018;
+  }
+  40% {
+    text-shadow: 0 1px 0 #4a3018, 0 0 16px rgba(242, 193, 75, 0.75);
+  }
+  100% {
+    text-shadow: 0 1px 0 #4a3018;
+  }
+}
+
+@keyframes spark-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+body.trail-complete .ending .brand,
+body.trail-complete .ending h1,
+body.trail-complete .ending p,
+body.trail-complete #complete-list p,
+body.trail-complete .credit,
+body.trail-complete #complete-reset {
+  animation: end-rise 0.5s ease both;
+}
+
+body.trail-complete .ending .brand {
+  animation-delay: 0.05s;
+}
+
+body.trail-complete #complete-coin {
+  animation:
+    coin-pop 0.75s cubic-bezier(0.2, 0.85, 0.2, 1.15) 0.12s both,
+    coin-glow 1.2s ease 0.12s both;
+}
+
+body.trail-complete .coin-stage::before,
+body.trail-complete .coin-stage::after {
+  animation: spark-burst 0.9s ease 0.28s both;
+}
+
+body.trail-complete .coin-stage::before {
+  box-shadow:
+    88px -36px 0 #f2c14b,
+    -92px -22px 0 #fff6d8,
+    72px 16px 0 #e2c56a,
+    -76px 18px 0 #fff6d8;
+}
+
+body.trail-complete .coin-stage::after {
+  animation-delay: 0.4s;
+  box-shadow:
+    -70px -68px 0 #e2c56a,
+    78px -74px 0 #fff6d8,
+    96px 4px 0 #f2c14b,
+    -98px 2px 0 #fff6d8;
+}
+
+body.trail-complete .ending h1 {
+  animation:
+    end-rise 0.55s ease 0.32s both,
+    title-gleam 1.1s ease 0.32s both;
+}
+
+body.trail-complete .ending p {
+  animation-delay: 0.46s;
+}
+
+body.trail-complete #complete-total {
+  animation-delay: 0.58s;
+}
+
+body.trail-complete #complete-list p:nth-child(1) { animation-delay: 0.68s; }
+body.trail-complete #complete-list p:nth-child(2) { animation-delay: 0.76s; }
+body.trail-complete #complete-list p:nth-child(3) { animation-delay: 0.84s; }
+body.trail-complete #complete-list p:nth-child(4) { animation-delay: 0.92s; }
+body.trail-complete #complete-list p:nth-child(5) { animation-delay: 1s; }
+body.trail-complete #complete-list p:nth-child(6) { animation-delay: 1.08s; }
+body.trail-complete #complete-list p:nth-child(7) { animation-delay: 1.16s; }
+
+body.trail-complete .credit {
+  animation-delay: 1.28s;
+}
+
+body.trail-complete #complete-reset {
+  animation-delay: 1.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jackpot,
+  .jackpot img,
+  #complete-coin,
+  .jackpot-title,
+  .jackpot-count,
+  body.camera-on:not(.target-found) #scan-hint,
+  body.treasure-arrive .panel,
+  body.treasure-arrive #treasure-name,
+  body.treasure-arrive #treasure-fact,
+  body.treasure-arrive::before,
+  #panel-count.score-pop,
+  #viewer.chest-open,
+  body.trail-complete .ending .brand,
+  body.trail-complete .ending h1,
+  body.trail-complete .ending p,
+  body.trail-complete #complete-list p,
+  body.trail-complete .credit,
+  body.trail-complete #complete-reset,
+  body.trail-complete .coin-stage::before,
+  body.trail-complete .coin-stage::after,
+  .logo-vast,
+  .logo-vast-wrap::after {
+    animation: none;
+  }
+}
+
+.complete {
+  display: none;
+  min-height: 100vh;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  max-width: 36rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.ending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(100%, 34rem);
+  min-width: 0;
+  text-align: center;
+}
+
+.ending h1,
+.ending p {
+  text-align: center;
+}
+
+#complete-list {
+  width: min(100%, 34rem);
+  min-width: 0;
+  text-align: center;
+}
+
+#complete-list p {
+  margin: 0.35rem 0 0;
+}
+
+#complete-list p.found {
+  color: #e2c56a;
+}
+
+.credit {
+  margin-top: 0.5rem;
+  color: #d9cbb6;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+body.trail-complete .complete {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  margin: 0;
+  overflow-y: auto;
+  background: rgba(28, 20, 14, 0.68);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  text-shadow: 0 1px 2px rgba(12, 8, 4, 0.95), 0 0 14px rgba(12, 8, 4, 0.75);
+}
+
+body.trail-complete .screen,
+body.trail-complete #camera-scene,
+body.trail-complete .panel,
+body.trail-complete #scan-hint,
+body.trail-complete .help,
+body.trail-complete #preparing {
+  display: none;
+}
