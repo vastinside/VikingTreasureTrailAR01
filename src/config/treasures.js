@@ -64,6 +64,8 @@ export const treasures = [
     fact: 'The Vikings used cattle horns to call for war and as a drinking vessel, to drink Mead made from honey. Well done Warrior, you have found this Warhorn treasure.',
     kind: 'model',
     model: './models/HornMain.glb',
+    // Starting angle in degrees: 'X Y Z' (X = tilt forward/back, Y = turn left/right, Z = roll sideways)
+    rotation: '90 0 0',
     voice: './audio/horn.mp3',
     targetIndex: 6,
   },
