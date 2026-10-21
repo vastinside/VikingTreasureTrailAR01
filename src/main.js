@@ -21,7 +21,10 @@ const treasureName = document.querySelector('#treasure-name')
 const treasureFact = document.querySelector('#treasure-fact')
 const closeButton = document.querySelector('#close-panel')
 const keepTryingButton = document.querySelector('#keep-trying')
-const viewTreasureButton = document.querySelector('#view-treasure')
+const helpResetButton = document.querySelector('#help-reset')
+const confirmReset = document.querySelector('#confirm-reset')
+const confirmYes = document.querySelector('#confirm-yes')
+const confirmNo = document.querySelector('#confirm-no')
 const preparing = document.querySelector('#preparing')
 const status = document.querySelector('#status')
 const treasureModel = document.querySelector('#treasure-model')
@@ -907,12 +910,7 @@ collectButton.addEventListener('click', () => {
   awardFind(active)
 })
 
-resetButton.addEventListener('click', () => {
-  resetProgress()
-  stopPlayback()
-  stopRewards()
-  render()
-})
+resetButton.addEventListener('click', askReset)
 
 closeButton.addEventListener('click', () => {
   document.body.classList.remove('target-found')
@@ -925,25 +923,53 @@ keepTryingButton.addEventListener('click', () => {
   scheduleHelp()
 })
 
-viewTreasureButton.addEventListener('click', () => {
-  if (!document.body.classList.contains('camera-on')) return
-  const progress = loadProgress()
-  const next = scored.find((item) => item.id !== 'viking' && !progress[item.id])
-  if (!next) return
-  const result = scanMarker(playback, next.targetIndex, Date.now())
-  playback = result.state
-  if (result.action !== 'start') return
-  document.body.classList.add('target-found')
-  showTreasure(next)
-  beginClip(next)
-  openPanel()
-})
+// Ask before a reset, because it throws away every collected coin.
+let resetReturnFocus = null
 
-completeReset.addEventListener('click', () => {
+function askReset() {
+  resetReturnFocus = document.activeElement
+  confirmReset.hidden = false
+  confirmNo.focus()
+}
+
+function closeResetWarning() {
+  confirmReset.hidden = true
+  if (resetReturnFocus && document.contains(resetReturnFocus)) resetReturnFocus.focus()
+  resetReturnFocus = null
+}
+
+helpResetButton.addEventListener('click', askReset)
+completeReset.addEventListener('click', askReset)
+
+confirmNo.addEventListener('click', closeResetWarning)
+
+// After a reset, turn the camera off and go back to the start page.
+function returnToStart() {
+  clearTimeout(helpTimer)
+  if (document.body.classList.contains('camera-on')) {
+    try {
+      cameraScene.systems['mindar-image-system'].stop()
+    } catch {
+      // The camera may still be starting up.
+    }
+  }
+  document.body.classList.remove('camera-on', 'target-found', 'show-help', 'preparing-on')
+  startButton.disabled = false
+  status.textContent = 'Ready to look.'
+  window.scrollTo(0, 0)
+}
+
+confirmYes.addEventListener('click', () => {
+  closeResetWarning()
   resetProgress()
   stopPlayback()
   stopRewards()
   render()
+  returnToStart()
+})
+
+confirmReset.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeResetWarning()
 })
 
 treasureModel.addEventListener('model-loaded', () => {

@@ -70,7 +70,7 @@
       <p>Having trouble finding the treasure?</p>
       <div class="panel-actions">
         <button id="keep-trying" class="btn btn-quiet" type="button">Keep trying</button>
-        <button id="view-treasure" class="btn" type="button">View treasure</button>
+        <button id="help-reset" class="btn" type="button">Reset trail</button>
       </div>
     </section>
 
@@ -132,6 +132,17 @@
       <p class="credit">Technical AR development by Vast Inside Ltd</p>
       <button id="complete-reset" class="btn btn-quiet" type="button">Reset trail</button>
     </section>
+
+    <div id="confirm-reset" class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text" hidden>
+      <div class="confirm-box">
+        <h2 id="confirm-title">Reset the trail?</h2>
+        <p id="confirm-text">If you choose Yes, you will lose all of your coins and start the trail again.</p>
+        <div class="panel-actions">
+          <button id="confirm-no" class="btn btn-quiet" type="button">No</button>
+          <button id="confirm-yes" class="btn" type="button">Yes</button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>
