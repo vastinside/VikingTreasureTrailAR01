@@ -54,7 +54,7 @@ export const treasures = [
     kind: 'model',
     model: './models/BowlMain.glb',
     // Starting angle in degrees: 'X Y Z' (X = tilt forward/back, Y = turn left/right, Z = roll sideways)
-    rotation: '0 90 ',
+    rotation: '0 0 0',
     voice: './audio/bowl.mp3',
     targetIndex: 5,
   },
