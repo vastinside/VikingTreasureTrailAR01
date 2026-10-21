@@ -54,6 +54,8 @@ const completeList = document.querySelector('#complete-list')
 const completeReset = document.querySelector('#complete-reset')
 
 const HELP_AFTER_MS = 8000
+// How much of the viewer a 3D model fills when it appears (1 = touches the edges).
+const FRAME_FILL = 0.9
 let helpTimer = null
 let audioContext = null
 let active = null
@@ -433,20 +435,39 @@ function fitTreasureModel() {
   treasureModel.object3D.scale.set(1, 1, 1)
   treasureModel.object3D.updateMatrixWorld(true)
 
-  const box = new three.Box3().setFromObject(mesh)
-  const localCenter = box.getCenter(new three.Vector3()).applyMatrix4(
-    new three.Matrix4().copy(spin.matrixWorld).invert(),
-  )
-  treasureModel.object3D.position.copy(localCenter).multiplyScalar(-1)
-  treasureModel.object3D.updateMatrixWorld(true)
+  // Measure every vertex in the spin's own space, so the fit holds at any angle of the turn.
+  const toSpin = new three.Matrix4().copy(spin.matrixWorld).invert()
+  const points = []
+  const point = new three.Vector3()
+  const vertexMatrix = new three.Matrix4()
+  mesh.traverse((child) => {
+    const position = child.isMesh && child.geometry && child.geometry.attributes.position
+    if (!position) return
+    vertexMatrix.multiplyMatrices(toSpin, child.matrixWorld)
+    for (let i = 0; i < position.count; i++) {
+      point.fromBufferAttribute(position, i).applyMatrix4(vertexMatrix)
+      points.push(point.x, point.y, point.z)
+    }
+  })
+  if (!points.length) return
 
-  const sphere = new three.Sphere()
-  new three.Box3().setFromObject(mesh).getBoundingSphere(sphere)
-  const distance = Math.max(0.4, camera.position.distanceTo(sphere.center))
-  const halfH = Math.tan((camera.fov * Math.PI) / 360) * distance
-  const halfW = halfH * camera.aspect
-  const limit = Math.min(halfW, halfH) * 0.6
-  fittedScale = sphere.radius > 0 ? limit / sphere.radius : 1
+  const box = new three.Box3()
+  for (let i = 0; i < points.length; i += 3) box.expandByPoint(point.set(points[i], points[i + 1], points[i + 2]))
+  const localCenter = box.getCenter(new three.Vector3())
+  let sweep = 0
+  for (let i = 0; i < points.length; i += 3) {
+    sweep = Math.max(sweep, Math.hypot(points[i] - localCenter.x, points[i + 2] - localCenter.z))
+  }
+  const halfHeight = (box.max.y - box.min.y) / 2
+
+  // Largest scale where the turning model stays inside FRAME_FILL of the viewer, with perspective.
+  const distance = Math.max(0.4, camera.position.distanceTo(spin.getWorldPosition(new three.Vector3())))
+  const tanV = Math.tan((camera.fov * Math.PI) / 360) * FRAME_FILL
+  const tanH = Math.tan((camera.fov * Math.PI) / 360) * camera.aspect * FRAME_FILL
+  const byHeight = halfHeight + sweep > 0 ? (tanV * distance) / (halfHeight + tanV * sweep) : Infinity
+  const byWidth = sweep > 0 ? (tanH * distance) / (sweep * Math.sqrt(1 + tanH * tanH)) : Infinity
+  fittedScale = Math.min(byHeight, byWidth)
+  if (!Number.isFinite(fittedScale) || fittedScale <= 0) fittedScale = 1
   fittedCenter = { x: localCenter.x, y: localCenter.y, z: localCenter.z }
   revealToken += 1
   cancelAnimationFrame(revealFrame)
@@ -1001,6 +1022,19 @@ viewer.addEventListener('wheel', (event) => {
   modelZoom = Math.min(2.2, Math.max(0.6, next))
   applyModelView()
 }, { passive: false })
+
+let refitFrame = 0
+function refitOnResize() {
+  cancelAnimationFrame(refitFrame)
+  refitFrame = requestAnimationFrame(() => {
+    if (!document.body.classList.contains('target-found') || !active || active.kind !== 'model') return
+    viewer.resize()
+    fitTreasureModel()
+  })
+}
+
+window.addEventListener('resize', refitOnResize)
+window.addEventListener('orientationchange', refitOnResize)
 
 viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)

@@ -488,6 +488,13 @@ body.camera-on.target-found .panel {
   padding-top: calc(0.35rem + env(safe-area-inset-top));
 }
 
+/* Tablets: let the model and video use more of the wider screen. */
+@media (min-width: 40rem) {
+  body.camera-on.target-found .panel {
+    width: min(92vw, 48rem);
+  }
+}
+
 body.camera-on.target-found #viewer,
 body.camera-on.target-found #spark {
   height: max(11rem, calc(100dvh - 17.5rem));
