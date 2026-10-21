@@ -79,6 +79,29 @@ body {
   margin-top: 1.25rem;
 }
 
+.screen {
+  /* Size of the small start screen text: "Made by" and the trademark line (other text is about 1rem). */
+  --legal-font-size: 0.7rem;
+}
+
+/* "Made by" between the two logos. */
+.made-by {
+  margin: 0;
+  color: rgba(244, 239, 228, 0.75);
+  font-size: var(--legal-font-size);
+  line-height: 1;
+}
+
+/* Trademark and copyright line at the bottom of the start screen. */
+.legal {
+  margin: 1.1rem 0 0;
+  max-width: 30rem;
+  color: rgba(244, 239, 228, 0.75);
+  font-size: var(--legal-font-size);
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
 .logo-kingdom,
 .logo-vast {
   display: block;
