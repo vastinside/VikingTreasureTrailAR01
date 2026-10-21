@@ -24,6 +24,8 @@ export const treasures = [
     fact: 'Did you know Vikings did not have horns on their helmets! They wore chainmail in battle and some helmets had eyepieces too. Well done Warrior, you have found this helmet treasure.',
     kind: 'model',
     model: './models/HelmetMain.glb',
+    // Starting angle in degrees: 'X Y Z' (X = tilt forward/back, Y = turn left/right, Z = roll sideways)
+    rotation: '0 900',
     voice: './audio/helmet.mp3',
     targetIndex: 2,
   },
@@ -51,6 +53,8 @@ export const treasures = [
     fact: 'Berries and porridge, sizzling meat, fish, flat breads and even cakes, we had a colourful variety of foods to eat. Well done Warrior! you have found this wooden treasure.',
     kind: 'model',
     model: './models/BowlMain.glb',
+    // Starting angle in degrees: 'X Y Z' (X = tilt forward/back, Y = turn left/right, Z = roll sideways)
+    rotation: '0 90 ',
     voice: './audio/bowl.mp3',
     targetIndex: 5,
   },
