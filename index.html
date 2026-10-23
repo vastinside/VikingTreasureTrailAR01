@@ -4,10 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Havelok's Kingdom</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script>
+      // A returning visitor already has the trail stored: skip the loading screen.
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        document.documentElement.classList.add('offline-ready')
+      }
+    </script>
   </head>
   <body>
+    <section id="loader" class="loader" aria-live="polite">
+      <p class="loader-title">Viking Treasure Trail</p>
+      <div class="loader-bar"><span id="loader-fill"></span></div>
+      <p id="loader-text">Getting the trail ready…</p>
+      <p class="loader-note">This only happens once. After that the trail works without internet.</p>
+      <button id="loader-retry" class="btn" type="button" hidden>Try again</button>
+    </section>
+
+    <script src="./vendor/aframe-1.6.0.min.js"></script>
+    <script src="./vendor/mindar-image-aframe-1.2.5.prod.js"></script>
+
     <main class="screen">
       <div class="screen-main">
         <img class="trail-mark" src="./images/token-gold.png" alt="Viking Treasure Trail">

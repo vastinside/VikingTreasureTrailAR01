@@ -1,6 +1,7 @@
 import './styles.css'
 import { treasures } from './config/treasures.js'
 import { loadProgress, collectTreasure, resetProgress } from './game/progress.js'
+import { prepareOffline } from './offline.js'
 import {
   cancelPlayback,
   clipFinished,
@@ -1061,4 +1062,10 @@ window.addEventListener('orientationchange', refitOnResize)
 viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)
 
+<<<<<<< Updated upstream
 showTreasure(treasures[0])
+=======
+showTreasure(treasures[0])
+
+prepareOffline()
+>>>>>>> Stashed changes
