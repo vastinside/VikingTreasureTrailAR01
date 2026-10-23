@@ -60,6 +60,29 @@ async function install() {
   }
 }
 
+// Used by "Reset trail": deletes the stored trail and the service worker,
+// then reloads so the loading screen downloads everything again.
+// Returns false when offline, because the trail could not be downloaded back.
+export async function removeOfflineCopy() {
+  if (!navigator.onLine) return false
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map((registration) => registration.unregister()))
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys()
+      await Promise.all(keys.map((key) => caches.delete(key)))
+    }
+  } catch {
+    // Storage may be blocked; reloading still starts the download again.
+  }
+
+  location.reload()
+  return true
+}
+
 export async function prepareOffline() {
   if (!('serviceWorker' in navigator)) {
     finish()

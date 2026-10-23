@@ -1,7 +1,7 @@
 import './styles.css'
 import { treasures } from './config/treasures.js'
 import { loadProgress, collectTreasure, resetProgress } from './game/progress.js'
-import { prepareOffline } from './offline.js'
+import { prepareOffline, removeOfflineCopy } from './offline.js'
 import {
   cancelPlayback,
   clipFinished,
@@ -1004,6 +1004,9 @@ confirmYes.addEventListener('click', () => {
   stopRewards()
   render()
   returnToStart()
+  // Also delete the stored trail, so the page reloads and downloads it again.
+  // Offline, the stored copy is kept so the trail still works.
+  removeOfflineCopy()
 })
 
 confirmReset.addEventListener('keydown', (event) => {
