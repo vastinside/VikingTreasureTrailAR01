@@ -202,6 +202,47 @@ function stopRewards() {
   endingMusic.currentTime = 0
 }
 
+// Videos play from an in-memory blob, read with fetch() like the 3D models.
+// That way the service worker never has to answer the byte-range requests
+// a <video> makes (iPhone Safari is strict about those), and the key canvas
+// can always read the frames.
+const videoBlobs = new Map()
+const blobPaths = new Map()
+
+function videoBlobUrl(path) {
+  if (!videoBlobs.has(path)) {
+    const loading = fetch(path)
+      .then((response) => {
+        if (!response.ok) throw new Error(`${path} could not load`)
+        return response.blob()
+      })
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        blobPaths.set(url, path)
+        return url
+      })
+      .catch(() => {
+        videoBlobs.delete(path)
+        return path
+      })
+    videoBlobs.set(path, loading)
+  }
+  return videoBlobs.get(path)
+}
+
+function loadVideo(path) {
+  const token = videoToken
+  videoBlobUrl(path).then((url) => {
+    if (token === videoToken) treasureVideo.src = url
+  })
+}
+
+// The file the video element is playing, as written in treasures.js.
+function videoSource() {
+  const src = treasureVideo.currentSrc || treasureVideo.src || ''
+  return blobPaths.get(src) || src
+}
+
 function showTreasure(treasure) {
   const previous = active
   active = treasure
@@ -239,7 +280,7 @@ function showTreasure(treasure) {
     keyCtx.clearRect(0, 0, treasureKey.width, treasureKey.height)
     treasureKey.hidden = true
     const nextSrc = treasure.video || treasure.videoMp4 || ''
-    const currentFile = (treasureVideo.currentSrc || treasureVideo.src || '').split('?')[0].split('/').pop()
+    const currentFile = videoSource().split('?')[0].split('/').pop()
     const nextFile = nextSrc.split('?')[0].split('/').pop()
     const alreadyLoaded = currentFile && currentFile === nextFile
     if (!alreadyLoaded) {
@@ -256,10 +297,10 @@ function showTreasure(treasure) {
     treasureVideo.classList.add('keying')
     if (treasure.video) {
       treasureVideo.dataset.key = 'black'
-      if (!alreadyLoaded) treasureVideo.src = treasure.video
+      if (!alreadyLoaded) loadVideo(treasure.video)
     } else if (treasure.videoMp4) {
       treasureVideo.dataset.key = 'green'
-      if (!alreadyLoaded) treasureVideo.src = treasure.videoMp4
+      if (!alreadyLoaded) loadVideo(treasure.videoMp4)
     } else if (playsWebm && treasure.videoWebm) {
       const source = document.createElement('source')
       source.src = treasure.videoWebm
@@ -635,7 +676,7 @@ function playActiveVideo() {
   const startDraw = () => {
     if (token !== videoToken || !active || active.kind !== 'video') return
     if (!treasureVideo.classList.contains('keying')) return
-    if (!clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) return
+    if (!clipSourceReady(videoSource(), expected, treasureVideo.readyState)) return
     drawingVideo = true
     treasureKey.hidden = false
     cancelAnimationFrame(keyFrame)
@@ -650,7 +691,7 @@ function playActiveVideo() {
   }
   const start = () => {
     if (token !== videoToken || !active || active.kind !== 'video') return
-    if (!clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) {
+    if (!clipSourceReady(videoSource(), expected, treasureVideo.readyState)) {
       treasureVideo.addEventListener('loadeddata', start, { once: true })
       treasureVideo.addEventListener('canplay', start, { once: true })
       return
@@ -772,7 +813,7 @@ function drawKey() {
   }
   try {
   const expected = active && (active.video || active.videoMp4)
-  if (clipSourceReady(treasureVideo.currentSrc, expected, treasureVideo.readyState)) {
+  if (clipSourceReady(videoSource(), expected, treasureVideo.readyState)) {
     const w = treasureVideo.videoWidth
     const h = treasureVideo.videoHeight
     if (w && h) {
@@ -1063,5 +1104,24 @@ viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)
 
 showTreasure(treasures[0])
+
+// Reopening a finished trail shows the final screen straight away, so play
+// its music too. Browsers block sound until the first tap, so wait for one
+// if the first try is refused.
+function playEndingOnReturn() {
+  if (!document.body.classList.contains('trail-complete')) return
+  const gestures = ['pointerup', 'touchend', 'keydown']
+  const onGesture = () => {
+    gestures.forEach((type) => document.removeEventListener(type, onGesture))
+    if (document.body.classList.contains('trail-complete') && endingMusic.paused) playEnding()
+  }
+  endingMusic.muted = false
+  endingMusic.play().catch(() => {
+    endingMusic.muted = true
+    gestures.forEach((type) => document.addEventListener(type, onGesture))
+  })
+}
+
+playEndingOnReturn()
 
 prepareOffline()
