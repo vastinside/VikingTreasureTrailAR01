@@ -863,10 +863,6 @@ async function beginTrail() {
   preparing.textContent = 'Preparing the trail…'
 
   try {
-    if ('serviceWorker' in navigator) {
-      await navigator.serviceWorker.ready
-    }
-
     await downloadTarget((fraction) => {
       const percent = Math.round(fraction * 100)
       preparing.textContent = `Preparing the trail… ${percent}%`
@@ -1066,7 +1062,3 @@ viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)
 
 showTreasure(treasures[0])
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-}
