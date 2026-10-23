@@ -1062,10 +1062,6 @@ window.addEventListener('orientationchange', refitOnResize)
 viewer.addEventListener('pointerup', endDrag)
 viewer.addEventListener('pointercancel', endDrag)
 
-<<<<<<< Updated upstream
-showTreasure(treasures[0])
-=======
 showTreasure(treasures[0])
 
 prepareOffline()
->>>>>>> Stashed changes
